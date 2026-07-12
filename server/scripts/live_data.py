@@ -34,12 +34,30 @@ def main():
         db = client['assetflow']
 
     print(f"✅ Connected to MongoDB: {MONGO_URI}")
+
+    # ── Startup Diagnostics ──
+    asset_count = db.assets.count_documents({})
+    alloc_count = db.allocations.count_documents({'status': 'Active'})
+    booking_count = db.bookings.count_documents({})
+    available_count = db.assets.count_documents({'status': 'Available'})
+    maint_count = db.assets.count_documents({'status': 'UnderMaintenance'})
+    print(f"📊 DB Snapshot: {asset_count} total assets ({available_count} available, {maint_count} maintenance)")
+    print(f"   Active allocations: {alloc_count} | Bookings: {booking_count}")
+
+    if asset_count == 0:
+        print("⚠️  No assets found in the database! Run 'node scripts/seed.js' first.")
+        return
+
     print("🔄 Live data simulator running... Press Ctrl+C to stop.\n")
 
     cycle = 0
     while True:
         cycle += 1
-        print(f"── Cycle {cycle} @ {datetime.now().strftime('%H:%M:%S')} ──")
+        now_str = datetime.now().strftime('%H:%M:%S')
+        flipped_to_maint = 0
+        flipped_to_avail = 0
+        nudged_allocs = 0
+        nudged_bookings = 0
 
         try:
             # 1. Flip 1-2 Available assets to UnderMaintenance
@@ -51,7 +69,7 @@ def main():
                         {'_id': asset['_id']},
                         {'$set': {'status': 'UnderMaintenance'}}
                     )
-                    print(f"  ↻ {asset.get('assetTag', '?')} → UnderMaintenance")
+                    flipped_to_maint += 1
 
             # 2. Flip 1-2 UnderMaintenance assets back to Available
             under_maint = list(db.assets.find({'status': 'UnderMaintenance'}).limit(10))
@@ -62,7 +80,7 @@ def main():
                         {'_id': asset['_id']},
                         {'$set': {'status': 'Available'}}
                     )
-                    print(f"  ↻ {asset.get('assetTag', '?')} → Available")
+                    flipped_to_avail += 1
 
             # 3. Nudge a couple expectedReturnDate values to create overdue flags
             active_allocs = list(db.allocations.find({
@@ -77,7 +95,7 @@ def main():
                         {'_id': alloc['_id']},
                         {'$set': {'expectedReturnDate': past_date}}
                     )
-                    print(f"  ⏰ Allocation {str(alloc['_id'])[-6:]} → overdue (due {past_date.strftime('%Y-%m-%d')})")
+                    nudged_allocs += 1
 
             # 4. Nudge a booking time to the past for demo
             upcoming_bookings = list(db.bookings.find({
@@ -92,13 +110,22 @@ def main():
                     {'_id': booking['_id']},
                     {'$set': {'startTime': past_start, 'endTime': past_end}}
                 )
-                print(f"  📅 Booking {str(booking['_id'])[-6:]} → shifted to past")
+                nudged_bookings += 1
 
         except Exception as e:
             print(f"  ⚠ Error: {e}")
 
+        # Print cycle summary
+        changes = []
+        if flipped_to_maint: changes.append(f"🔧 {flipped_to_maint} → Maintenance")
+        if flipped_to_avail: changes.append(f"✅ {flipped_to_avail} → Available")
+        if nudged_allocs: changes.append(f"⏰ {nudged_allocs} → Overdue")
+        if nudged_bookings: changes.append(f"📅 {nudged_bookings} booking shifted")
+
+        summary = " | ".join(changes) if changes else "💤 No changes (pool exhausted)"
+
         sleep_time = random.randint(30, 45)
-        print(f"  💤 Sleeping {sleep_time}s...\n")
+        print(f"── Cycle {cycle} @ {now_str} ──  {summary}  (next in {sleep_time}s)")
         time.sleep(sleep_time)
 
 

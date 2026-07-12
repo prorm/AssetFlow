@@ -1,12 +1,21 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const { Resend } = require('resend');
 const { User } = require('../models');
 const { auth } = require('../middleware/auth');
 
 const router = express.Router();
-const resend = new Resend(process.env.RESEND_API_KEY);
+
+// Conditionally load Resend only if API key exists
+let resend = null;
+if (process.env.RESEND_API_KEY) {
+  try {
+    const { Resend } = require('resend');
+    resend = new Resend(process.env.RESEND_API_KEY);
+  } catch (e) {
+    console.log('[AUTH] Resend package not available, OTP emails disabled.');
+  }
+}
 
 const signToken = (user) =>
   jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, {
@@ -23,7 +32,7 @@ const sanitizeUser = (user) => ({
 });
 
 // ─── POST /api/auth/signup ──────────────────────────────────────────────
-// Always creates Employee — never accepts a role param from the client.
+// Creates Employee, sends OTP for email verification before issuing token.
 router.post('/signup', async (req, res) => {
   try {
     const { name, email, password } = req.body;
@@ -49,63 +58,33 @@ router.post('/signup', async (req, res) => {
       role: 'Employee', // hardcoded — never trust client input
     });
 
-    const token = signToken(user);
-    res.status(201).json({ token, user: sanitizeUser(user) });
+    // Generate 6-digit OTP for email verification
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    user.otp = otp;
+    user.otpExpiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 mins
+    await user.save();
+
+    // Send email via Resend (or log in dev mode)
+    if (resend) {
+      await resend.emails.send({
+        from: 'AssetFlow <onboarding@resend.dev>',
+        to: user.email,
+        subject: 'Verify your AssetFlow Account',
+        html: `<p>Your verification code is: <strong>${otp}</strong></p><p>It expires in 10 minutes.</p>`,
+      });
+    } else {
+      console.log(`[DEV MODE] Signup OTP for ${user.email} is ${otp}`);
+    }
+
+    res.status(201).json({ requiresVerification: true, email: user.email });
   } catch (err) {
     console.error('Signup error:', err);
     res.status(500).json({ error: 'Server error.' });
   }
 });
 
-// ─── POST /api/auth/login ───────────────────────────────────────────────
-router.post('/login', async (req, res) => {
-  try {
-    const { email, password } = req.body;
-
-    if (!email || !password) {
-      return res.status(400).json({ error: 'Email and password are required.' });
-    }
-
-    const user = await User.findOne({ email: email.toLowerCase() });
-    if (!user) {
-      return res.status(401).json({ error: 'Invalid credentials.' });
-    }
-
-    if (user.status !== 'Active') {
-      return res.status(403).json({ error: 'Account is inactive.' });
-    }
-
-    const valid = await bcrypt.compare(password, user.passwordHash);
-    if (!valid) {
-      return res.status(401).json({ error: 'Invalid credentials.' });
-    }
-
-    // Generate 6-digit OTP
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    user.otp = otp;
-    user.otpExpiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 mins
-    await user.save();
-
-    // Send email via Resend
-    if (process.env.RESEND_API_KEY) {
-      await resend.emails.send({
-        from: 'AssetFlow <onboarding@resend.dev>',
-        to: user.email,
-        subject: 'Your AssetFlow Login Code',
-        html: `<p>Your authentication code is: <strong>${otp}</strong></p><p>It expires in 10 minutes.</p>`,
-      });
-    } else {
-      console.log(`[DEV MODE] OTP for ${user.email} is ${otp}`);
-    }
-
-    res.json({ requires2FA: true, email: user.email });
-  } catch (err) {
-    console.error('Login error:', err);
-    res.status(500).json({ error: 'Server error.' });
-  }
-});
-
 // ─── POST /api/auth/verify-otp ──────────────────────────────────────────
+// Final step of signup — verifies OTP and issues JWT token.
 router.post('/verify-otp', async (req, res) => {
   try {
     const { email, otp } = req.body;
@@ -132,6 +111,38 @@ router.post('/verify-otp', async (req, res) => {
     res.json({ token, user: sanitizeUser(user) });
   } catch (err) {
     console.error('Verify OTP error:', err);
+    res.status(500).json({ error: 'Server error.' });
+  }
+});
+
+// ─── POST /api/auth/login ───────────────────────────────────────────────
+// Direct login — no OTP required. Admin-created and seeded users log in directly.
+router.post('/login', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({ error: 'Email and password are required.' });
+    }
+
+    const user = await User.findOne({ email: email.toLowerCase() });
+    if (!user) {
+      return res.status(401).json({ error: 'Invalid credentials.' });
+    }
+
+    if (user.status !== 'Active') {
+      return res.status(403).json({ error: 'Account is inactive.' });
+    }
+
+    const valid = await bcrypt.compare(password, user.passwordHash);
+    if (!valid) {
+      return res.status(401).json({ error: 'Invalid credentials.' });
+    }
+
+    const token = signToken(user);
+    res.json({ token, user: sanitizeUser(user) });
+  } catch (err) {
+    console.error('Login error:', err);
     res.status(500).json({ error: 'Server error.' });
   }
 });

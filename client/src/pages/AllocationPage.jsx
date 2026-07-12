@@ -166,16 +166,16 @@ export default function AllocationPage() {
       </div>
 
       {activeTab === 'allocations' && (
-        <div className="border rounded-md">
-          <table className="w-full text-sm text-left">
+        <div className="border rounded-md overflow-x-auto">
+          <table className="w-full text-sm text-left whitespace-nowrap">
             <thead className="bg-muted/50 text-muted-foreground">
               <tr>
-                <th className="p-3 font-medium">Asset</th>
-                <th className="p-3 font-medium">Holder</th>
+                <th className="p-3 font-medium min-w-[200px]">Asset</th>
+                <th className="p-3 font-medium min-w-[120px]">Holder</th>
                 <th className="p-3 font-medium">Type</th>
-                <th className="p-3 font-medium">Allocated</th>
-                <th className="p-3 font-medium">Expected Return</th>
-                <th className="p-3 font-medium">Status</th>
+                <th className="p-3 font-medium min-w-[110px]">Allocated</th>
+                <th className="p-3 font-medium min-w-[130px]">Expected Return</th>
+                <th className="p-3 font-medium min-w-[140px]">Status</th>
                 <th className="p-3 font-medium">Actions</th>
               </tr>
             </thead>
@@ -290,14 +290,14 @@ export default function AllocationPage() {
       )}
 
       {activeTab === 'transfers' && (
-        <div className="border rounded-md">
-          <table className="w-full text-sm text-left">
+        <div className="border rounded-md overflow-x-auto">
+          <table className="w-full text-sm text-left whitespace-nowrap">
             <thead className="bg-muted/50 text-muted-foreground">
               <tr>
-                <th className="p-3 font-medium">Asset</th>
-                <th className="p-3 font-medium">From</th>
-                <th className="p-3 font-medium">To</th>
-                <th className="p-3 font-medium">Requested By</th>
+                <th className="p-3 font-medium min-w-[200px]">Asset</th>
+                <th className="p-3 font-medium min-w-[140px]">From</th>
+                <th className="p-3 font-medium min-w-[140px]">To</th>
+                <th className="p-3 font-medium min-w-[120px]">Requested By</th>
                 <th className="p-3 font-medium">Status</th>
                 <th className="p-3 font-medium">Actions</th>
               </tr>

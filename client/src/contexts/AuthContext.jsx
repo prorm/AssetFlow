@@ -32,31 +32,35 @@ export function AuthProvider({ children }) {
       .finally(() => setLoading(false));
   }, [token]);
 
+  // Login — direct, no OTP
   const login = useCallback(async (email, password) => {
     const res = await api.post('/auth/login', { email, password });
-    if (res.data.requires2FA) {
-      return { requires2FA: true, email: res.data.email };
-    }
     const { token: t, user: u } = res.data;
     localStorage.setItem('assetflow_token', t);
     localStorage.setItem('assetflow_user', JSON.stringify(u));
     setToken(t);
     setUser(u);
-    return { requires2FA: false, user: u };
+    return { user: u };
   }, []);
 
-  const verifyOtp = useCallback(async (email, otp) => {
-    const res = await api.post('/auth/verify-otp', { email, otp });
-    const { token: t, user: u } = res.data;
-    localStorage.setItem('assetflow_token', t);
-    localStorage.setItem('assetflow_user', JSON.stringify(u));
-    setToken(t);
-    setUser(u);
-    return u;
-  }, []);
-
+  // Signup — returns requiresVerification, does NOT log in yet
   const signup = useCallback(async (name, email, password) => {
     const res = await api.post('/auth/signup', { name, email, password });
+    if (res.data.requiresVerification) {
+      return { requiresVerification: true, email: res.data.email };
+    }
+    // Fallback: if server returns token directly (shouldn't happen now)
+    const { token: t, user: u } = res.data;
+    localStorage.setItem('assetflow_token', t);
+    localStorage.setItem('assetflow_user', JSON.stringify(u));
+    setToken(t);
+    setUser(u);
+    return { requiresVerification: false, user: u };
+  }, []);
+
+  // Verify OTP — final step of signup, issues token
+  const verifyOtp = useCallback(async (email, otp) => {
+    const res = await api.post('/auth/verify-otp', { email, otp });
     const { token: t, user: u } = res.data;
     localStorage.setItem('assetflow_token', t);
     localStorage.setItem('assetflow_user', JSON.stringify(u));
@@ -73,7 +77,7 @@ export function AuthProvider({ children }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, token, loading, login, signup, logout }}>
+    <AuthContext.Provider value={{ user, token, loading, login, signup, verifyOtp, logout }}>
       {children}
     </AuthContext.Provider>
   );

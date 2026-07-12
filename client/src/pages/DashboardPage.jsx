@@ -81,7 +81,10 @@ export default function DashboardPage() {
             if (filters.categoryId) params.append('categoryId', filters.categoryId);
             if (filters.status) params.append('status', filters.status);
             if (filters.search) params.append('search', filters.search);
-            if (filters.location) params.append('search', filters.location); // Fallback to search if location provided
+            if (filters.departmentId) params.append('departmentId', filters.departmentId);
+            if (filters.overdue) params.append('overdue', 'true');
+            if (filters.condition) params.append('condition', filters.condition);
+            if (filters.location) params.append('search', filters.location);
             
             navigate(`/assets?${params.toString()}`);
           } catch (err) {
@@ -169,26 +172,27 @@ export default function DashboardPage() {
               {overdue?.overdueAllocations?.length || 0}
             </Badge>
           </div>
-          <div className="p-4 space-y-3 bg-card">
+          <div className="p-4 space-y-3 bg-card max-h-[420px] overflow-y-auto">
             {overdue?.overdueAllocations?.length > 0 ? (
               overdue.overdueAllocations.map((a) => (
-                <div key={a._id} className="flex items-center gap-3 p-3 bg-red-50/50 dark:bg-red-900/10 rounded-lg border border-red-100 dark:border-red-900/30">
-                  <div className="w-8 h-8 rounded-full bg-red-500/10 flex items-center justify-center flex-shrink-0">
+                <div key={a._id} className="flex items-start gap-3 p-4 bg-red-50/50 dark:bg-red-900/10 rounded-lg border border-red-100 dark:border-red-900/30">
+                  <div className="w-9 h-9 rounded-full bg-red-500/10 flex items-center justify-center flex-shrink-0 mt-0.5">
                     <AlertTriangle className="w-4 h-4 text-red-500" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium truncate">{a.assetId?.name} ({a.assetId?.assetTag})</p>
-                    <p className="text-xs text-muted-foreground">
-                      Held by {a.holderName} • Due {format(new Date(a.expectedReturnDate), 'MMM d, yyyy')}
+                    <p className="text-sm font-semibold leading-snug">{a.assetId?.name}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">{a.assetId?.assetTag}</p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Held by <span className="font-medium text-foreground">{a.holderName}</span> • Due {format(new Date(a.expectedReturnDate), 'MMM d, yyyy')}
                     </p>
                   </div>
-                  <Badge variant="destructive" className="text-xs flex-shrink-0">
+                  <Badge variant="destructive" className="text-xs flex-shrink-0 whitespace-nowrap">
                     {Math.ceil((new Date() - new Date(a.expectedReturnDate)) / (1000 * 60 * 60 * 24))}d late
                   </Badge>
                 </div>
               ))
             ) : (
-              <div className="text-center py-6 text-muted-foreground">
+              <div className="text-center py-8 text-muted-foreground">
                 <CheckCircle2 className="w-8 h-8 mx-auto mb-2 opacity-30" />
                 <p className="text-sm">No overdue items</p>
               </div>
@@ -205,24 +209,25 @@ export default function DashboardPage() {
               {upcoming?.upcomingReturns?.length || 0}
             </Badge>
           </div>
-          <div className="p-4 space-y-3 bg-card">
+          <div className="p-4 space-y-3 bg-card max-h-[420px] overflow-y-auto">
             {upcoming?.upcomingReturns?.length > 0 ? (
               upcoming.upcomingReturns.map((a) => (
-                <div key={a._id} className="flex items-center gap-3 p-3 rounded-lg border hover:bg-muted/30 transition-colors">
-                  <div className="w-8 h-8 rounded-full bg-cyan-500/10 flex items-center justify-center flex-shrink-0">
+                <div key={a._id} className="flex items-start gap-3 p-4 rounded-lg border hover:bg-muted/30 transition-colors">
+                  <div className="w-9 h-9 rounded-full bg-cyan-500/10 flex items-center justify-center flex-shrink-0 mt-0.5">
                     <Undo2 className="w-4 h-4 text-cyan-600" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium truncate">{a.assetId?.name} ({a.assetId?.assetTag})</p>
-                    <p className="text-xs text-muted-foreground">
-                      Held by {a.holderName} • Due {format(new Date(a.expectedReturnDate), 'MMM d, yyyy')}
+                    <p className="text-sm font-semibold leading-snug">{a.assetId?.name}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">{a.assetId?.assetTag}</p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Held by <span className="font-medium text-foreground">{a.holderName}</span> • Due {format(new Date(a.expectedReturnDate), 'MMM d, yyyy')}
                     </p>
                   </div>
-                  <ChevronRight className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                  <ChevronRight className="w-4 h-4 text-muted-foreground flex-shrink-0 mt-1" />
                 </div>
               ))
             ) : (
-              <div className="text-center py-6 text-muted-foreground">
+              <div className="text-center py-8 text-muted-foreground">
                 <CalendarDays className="w-8 h-8 mx-auto mb-2 opacity-30" />
                 <p className="text-sm">No upcoming returns this week</p>
               </div>

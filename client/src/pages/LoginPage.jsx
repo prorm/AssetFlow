@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,7 +7,7 @@ import { Package, ArrowRight, Eye, EyeOff } from 'lucide-react';
 
 export default function LoginPage() {
   const [isLogin, setIsLogin] = useState(true);
-  const [step, setStep] = useState('credentials');
+  const [step, setStep] = useState('credentials'); // 'credentials' or 'otp' (signup only)
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -24,16 +24,18 @@ export default function LoginPage() {
     setLoading(true);
     try {
       if (isLogin) {
-        const res = await login(email, password);
-        if (res.requires2FA) {
-          setStep('otp');
-          setLoading(false);
-          return;
-        }
+        // Direct login — no OTP
+        await login(email, password);
+        navigate('/dashboard');
       } else {
-        await signup(name, email, password);
+        // Signup — sends OTP to email
+        const res = await signup(name, email, password);
+        if (res.requiresVerification) {
+          setStep('otp');
+        } else {
+          navigate('/dashboard');
+        }
       }
-      navigate('/dashboard');
     } catch (err) {
       setError(err.response?.data?.error || 'Something went wrong.');
     } finally {
@@ -94,11 +96,11 @@ export default function LoginPage() {
 
           <div>
             <h2 className="text-2xl font-bold text-foreground">
-              {step === 'otp' ? 'Enter Authentication Code' : (isLogin ? 'Welcome back' : 'Create your account')}
+              {step === 'otp' ? 'Verify your Email' : (isLogin ? 'Welcome back' : 'Create your account')}
             </h2>
             <p className="mt-1 text-sm text-muted-foreground">
               {step === 'otp'
-                ? `We sent a 6-digit code to ${email}`
+                ? `We sent a 6-digit code to ${email}. Check your inbox (or server console in dev mode).`
                 : (isLogin
                   ? 'Enter your credentials to access your account.'
                   : 'Fill in your details to get started.')}
@@ -115,7 +117,7 @@ export default function LoginPage() {
             <form onSubmit={handleVerifyOtp} className="space-y-5">
               <div className="space-y-2">
                 <label htmlFor="otp" className="text-sm font-medium text-foreground">
-                  6-Digit Code
+                  6-Digit Verification Code
                 </label>
                 <Input
                   id="otp"
@@ -128,15 +130,15 @@ export default function LoginPage() {
                 />
               </div>
               <Button type="submit" className="w-full" size="lg" disabled={loading}>
-                {loading ? 'Verifying…' : 'Verify Code'}
+                {loading ? 'Verifying…' : 'Verify & Create Account'}
               </Button>
               <p className="text-center text-sm text-muted-foreground">
                 <button
                   type="button"
                   className="text-primary font-medium hover:underline"
-                  onClick={() => setStep('credentials')}
+                  onClick={() => { setStep('credentials'); setError(''); }}
                 >
-                  Back to login
+                  Back to signup
                 </button>
               </p>
             </form>
