@@ -54,8 +54,8 @@ AssetFlow is a comprehensive, full-stack **Asset Management and Resource Booking
 - **Frontend**: React (Vite), React Router, Tailwind CSS, Lucide React (Icons), `date-fns` for date formatting, Axios for API calls. UI built using custom Tailwind components inspired by shadcn/ui.
 - **Backend**: Node.js, Express.js.
 - **Database**: MongoDB & Mongoose.
-- **Storage**: Multer for local photo uploads.
-- **Authentication**: JWT (JSON Web Tokens) + bcrypt for password hashing.
+- **Storage**: Local filesystem storage utilizing **Multer** for processing `multipart/form-data` and managing photo uploads.
+- **Authentication**: JWT (JSON Web Tokens) + bcrypt for password hashing. Incorporates **Resend API** for 2FA / OTP email verification during user sign-up.
 
 ---
 
@@ -74,6 +74,7 @@ We have created automated setup scripts to install all dependencies for both the
    MONGO_URI=mongodb://127.0.0.1:27017/assetflow
    JWT_SECRET=your_super_secret_key_123
    GROQ_API_KEY=your_groq_key_here
+   RESEND_API_KEY=your_resend_api_key_here
    ```
 4. **Start the applications:**
    Open two terminals:
