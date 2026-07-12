@@ -61,32 +61,25 @@ AssetFlow is a comprehensive, full-stack **Asset Management and Resource Booking
 
 ## ⚙️ Running Locally
 
-1. **Install Dependencies**
-   ```bash
-   cd client && npm install
-   cd ../server && npm install
-   ```
+We have created automated setup scripts to install all dependencies for both the frontend, backend, and the Python live data simulator.
 
-2. **Environment Variables**
-   Create a `.env` file in the `/server` directory:
+1. **Clone the repository**
+2. **Run the setup script** for your operating system:
+   - **Windows:** double-click `setup\setup.bat` or run it in the terminal
+   - **Mac/Linux:** run `sh setup/setup.sh` in the terminal
+3. **Set up Environment Variables:**
+   - Create a `.env` file in the `/server` directory:
    ```env
    PORT=5000
    MONGO_URI=mongodb://127.0.0.1:27017/assetflow
    JWT_SECRET=your_super_secret_key_123
+   GROQ_API_KEY=your_groq_key_here
    ```
-
-3. **Start the Development Servers**
-   In terminal 1 (Backend):
-   ```bash
-   cd server
-   npm run dev
-   ```
-   
-   In terminal 2 (Frontend):
-   ```bash
-   cd client
-   npm run dev
-   ```
+4. **Start the applications:**
+   Open two terminals:
+   - Terminal 1: `cd server && npm run dev`
+   - Terminal 2: `cd client && npm run dev`
+   - Terminal 3 (optional, for live demo data): `cd server/scripts && python live_data.py`
 
 4. **Seed Database (Optional)**
    To generate the default `admin@assetflow.com` user and initial test data:
