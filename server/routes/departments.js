@@ -1,6 +1,7 @@
 const express = require('express');
 const { Department } = require('../models');
 const { auth, authorize } = require('../middleware/auth');
+const { createActivityLog } = require('../helpers');
 
 const router = express.Router();
 
@@ -36,6 +37,7 @@ router.post('/', auth, authorize('Admin'), async (req, res) => {
       headUserId: headUserId || null,
       parentDepartmentId: parentDepartmentId || null
     });
+    createActivityLog(req.user._id, 'Created Department', 'Department', department._id, req.ip);
     res.status(201).json({ success: true, data: department });
   } catch (error) {
     console.error('Error creating department:', error);
@@ -59,6 +61,7 @@ router.put('/:id', auth, authorize('Admin'), async (req, res) => {
       return res.status(404).json({ error: 'Department not found' });
     }
 
+    createActivityLog(req.user._id, 'Updated Department', 'Department', department._id, req.ip);
     res.json({ success: true, data: department });
   } catch (error) {
     console.error('Error updating department:', error);

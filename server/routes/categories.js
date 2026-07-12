@@ -1,6 +1,7 @@
 const express = require('express');
 const { AssetCategory } = require('../models');
 const { auth, authorize } = require('../middleware/auth');
+const { createActivityLog } = require('../helpers');
 
 const router = express.Router();
 
@@ -32,6 +33,7 @@ router.post('/', auth, authorize('Admin'), async (req, res) => {
       name,
       customFields: customFields || []
     });
+    createActivityLog(req.user._id, 'Created Category', 'AssetCategory', category._id, req.ip);
     res.status(201).json({ success: true, data: category });
   } catch (error) {
     console.error('Error creating category:', error);
@@ -55,6 +57,7 @@ router.put('/:id', auth, authorize('Admin'), async (req, res) => {
       return res.status(404).json({ error: 'Category not found' });
     }
 
+    createActivityLog(req.user._id, 'Updated Category', 'AssetCategory', category._id, req.ip);
     res.json({ success: true, data: category });
   } catch (error) {
     console.error('Error updating category:', error);

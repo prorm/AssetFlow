@@ -1,6 +1,7 @@
 const express = require('express');
 const { User } = require('../models');
 const { auth, authorize } = require('../middleware/auth');
+const { createActivityLog } = require('../helpers');
 
 const router = express.Router();
 
@@ -49,6 +50,7 @@ router.patch('/:id/role', auth, authorize('Admin'), async (req, res) => {
       return res.status(404).json({ error: 'User not found' });
     }
 
+    createActivityLog(req.user._id, `Changed User Role to ${role}`, 'User', user._id, req.ip);
     res.json({ success: true, data: user });
   } catch (error) {
     console.error('Error promoting user:', error);

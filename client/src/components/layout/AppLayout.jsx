@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Link, useLocation, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -17,7 +17,9 @@ import {
   X,
   ChevronDown,
   User,
+  Bell,
 } from 'lucide-react';
+import api from '@/lib/api';
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, roles: ['Employee', 'DeptHead', 'AssetManager', 'Admin'] },
@@ -37,6 +39,20 @@ export default function AppLayout() {
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  const fetchUnread = useCallback(async () => {
+    try {
+      const { data } = await api.get('/notifications?unread=true');
+      setUnreadCount(data.unreadCount || 0);
+    } catch (e) { /* ignore */ }
+  }, []);
+
+  useEffect(() => {
+    fetchUnread();
+    const interval = setInterval(fetchUnread, 30000);
+    return () => clearInterval(interval);
+  }, [fetchUnread]);
 
   const filteredNav = navigation.filter((item) => item.roles.includes(user?.role));
 
@@ -147,6 +163,15 @@ export default function AppLayout() {
           </button>
           <div className="flex-1" />
           <div className="flex items-center gap-3">
+            {/* Notification bell */}
+            <Link to="/activity-logs" className="relative p-2 rounded-lg hover:bg-muted transition-colors">
+              <Bell className="w-5 h-5 text-muted-foreground" />
+              {unreadCount > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 w-5 h-5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                  {unreadCount > 9 ? '9+' : unreadCount}
+                </span>
+              )}
+            </Link>
             <div className="hidden sm:block text-right">
               <p className="text-sm font-medium text-foreground">{user?.name}</p>
               <p className="text-xs text-muted-foreground">{user?.email}</p>

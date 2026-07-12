@@ -1,6 +1,7 @@
 const express = require('express');
 const { Asset, Booking } = require('../models');
 const { auth, authorize } = require('../middleware/auth');
+const { createNotification, createActivityLog } = require('../helpers');
 const router = express.Router();
 
 // POST /api/bookings (create booking)
@@ -42,6 +43,13 @@ router.post('/', auth, async (req, res) => {
       endTime: end,
       status: 'Upcoming'
     });
+
+    createNotification(
+      req.user._id, 'booking',
+      `Booking confirmed for ${asset.name} (${asset.assetTag})`,
+      { entityType: 'Booking', entityId: booking._id }
+    );
+    createActivityLog(req.user._id, 'Created Booking', 'Booking', booking._id, req.ip);
 
     res.status(201).json({ success: true, data: booking });
   } catch (error) {
@@ -101,6 +109,13 @@ router.patch('/:id/cancel', auth, async (req, res) => {
     booking.status = 'Cancelled';
     await booking.save();
 
+    createNotification(
+      booking.bookedBy, 'booking',
+      'Your booking has been cancelled',
+      { entityType: 'Booking', entityId: booking._id }
+    );
+    createActivityLog(req.user._id, 'Cancelled Booking', 'Booking', booking._id, req.ip);
+
     res.json({ success: true, data: booking });
   } catch (error) {
     console.error('Error cancelling booking:', error);
@@ -146,6 +161,8 @@ router.patch('/:id/reschedule', auth, async (req, res) => {
     booking.endTime = end;
     booking.status = 'Upcoming';
     await booking.save();
+
+    createActivityLog(req.user._id, 'Rescheduled Booking', 'Booking', booking._id, req.ip);
 
     res.json({ success: true, data: booking });
   } catch (error) {

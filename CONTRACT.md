@@ -264,6 +264,59 @@
 
 ---
 
+### Audits (Round 4)
+| Method | Path                              | Body                                         | Response                              | Auth              |
+|--------|-----------------------------------|----------------------------------------------|---------------------------------------|-------------------|
+| POST   | `/api/audits`                     | `{scope: {department, location}, dateRange: {start, end}, auditors: [userIds]}` | `201: {success, data: AuditCycle}` | Admin/AssetManager |
+| GET    | `/api/audits`                     | —                                            | `{success, data: [AuditCycle]}`      | Admin/AssetManager |
+| GET    | `/api/audits/:id`                 | —                                            | `{success, data: AuditCycle}`        | Admin/AssetManager |
+| PATCH  | `/api/audits/:id/items/:assetId`  | `{result, notes}`                            | `{success, data: AuditCycle}`        | Assigned auditor   |
+| PATCH  | `/api/audits/:id/close`           | —                                            | `{success, data: AuditCycle}`        | Admin/AssetManager |
+
+> **Close behavior**: Sets status to `Closed`, builds `discrepancyReport` from Missing/Damaged items, and sets `asset.status = 'Lost'` for every confirmed-Missing asset.
+
+---
+
+### Notifications (Round 4)
+| Method | Path                            | Body | Response                              | Auth          |
+|--------|---------------------------------|------|---------------------------------------|---------------|
+| GET    | `/api/notifications`            | Query: `unread` | `{success, data: [Notification], unreadCount}` | Authenticated |
+| PATCH  | `/api/notifications/:id/read`   | —    | `{success, data: Notification}`      | Owner only    |
+| PATCH  | `/api/notifications/read-all`   | —    | `{success, message}`                 | Authenticated |
+
+> **Trigger points**: Asset allocated (notify holder), transfer approved (notify both), booking confirmed/cancelled (notify booker), maintenance approved/rejected/resolved (notify requester), audit discrepancy flagged (notify Admin/AssetManager).
+
+---
+
+### Activity Logs (Round 4)
+| Method | Path                 | Body                                      | Response                          | Auth  |
+|--------|----------------------|-------------------------------------------|-----------------------------------|-------|
+| GET    | `/api/activity-logs` | Query: `userId, entityType, startDate, endDate` | `{success, data: [ActivityLog]}` | Admin |
+
+> **Write points**: Every create/update across allocations, transfers, bookings, maintenance, audits, departments, categories, users. Captures userId, action, entityType, entityId, timestamp, ipAddress.
+
+---
+
+### Reports (Round 4)
+| Method | Path                              | Body | Response                          | Auth                    |
+|--------|-----------------------------------|------|-----------------------------------|-------------------------|
+| GET    | `/api/reports/utilization`        | —    | `{success, data: [...]}`         | DeptHead/AssetManager+  |
+| GET    | `/api/reports/maintenance-frequency` | — | `{success, data: [...]}`         | DeptHead/AssetManager+  |
+| GET    | `/api/reports/department-summary` | —    | `{success, data: [...]}`         | DeptHead/AssetManager+  |
+| GET    | `/api/reports/booking-heatmap`    | —    | `{success, data: [...]}`         | DeptHead/AssetManager+  |
+| GET    | `/api/reports/assets-due`         | —    | `{success, data: {poorCondition, underMaintenance}}` | DeptHead/AssetManager+ |
+
+---
+
+### Dashboard (Round 4)
+| Method | Path                     | Body | Response                          | Auth          |
+|--------|--------------------------|------|-----------------------------------|---------------|
+| GET    | `/api/dashboard/stats`   | —    | `{success, data: {availableCount, allocatedCount, ...}}` | Authenticated |
+| GET    | `/api/dashboard/overdue` | —    | `{success, data: {overdueAllocations}}` | Authenticated |
+| GET    | `/api/dashboard/upcoming`| —    | `{success, data: {upcomingReturns}}`    | Authenticated |
+
+---
+
 ## Branch Flow
 
 main
@@ -271,4 +324,5 @@ main
  └── round-2-core-data      (CRUD: users, departments, categories, assets)
  └── round-3-transactions   (allocations, transfers, bookings, maintenance)
  └── round-4-ops-polish     (audit, reports, activity logs, notifications, polish)
+
 

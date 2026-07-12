@@ -13,7 +13,7 @@ const auditCycleSchema = new mongoose.Schema(
     auditors: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
     status: {
       type: String,
-      enum: ['Planned', 'InProgress', 'Completed'],
+      enum: ['Planned', 'InProgress', 'Completed', 'Closed'],
       default: 'Planned',
     },
     items: [
@@ -21,8 +21,15 @@ const auditCycleSchema = new mongoose.Schema(
         assetId: { type: mongoose.Schema.Types.ObjectId, ref: 'Asset' },
         result: {
           type: String,
-          enum: ['Found', 'Missing', 'Damaged'],
+          enum: ['Verified', 'Found', 'Missing', 'Damaged'],
         },
+        notes: { type: String, default: '' },
+      },
+    ],
+    discrepancyReport: [
+      {
+        assetId: { type: mongoose.Schema.Types.ObjectId, ref: 'Asset' },
+        result: { type: String },
         notes: { type: String },
       },
     ],
@@ -31,3 +38,4 @@ const auditCycleSchema = new mongoose.Schema(
 );
 
 module.exports = mongoose.model('AuditCycle', auditCycleSchema);
+

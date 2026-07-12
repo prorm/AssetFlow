@@ -1,44 +1,198 @@
-import { BarChart3, Package, Users, TrendingUp } from 'lucide-react';
-
-const stats = [
-  { label: 'Total Assets', value: '—', icon: Package, color: 'bg-blue-500/10 text-blue-600' },
-  { label: 'Active Users', value: '—', icon: Users, color: 'bg-emerald-500/10 text-emerald-600' },
-  { label: 'Allocations', value: '—', icon: TrendingUp, color: 'bg-amber-500/10 text-amber-600' },
-  { label: 'Pending Requests', value: '—', icon: BarChart3, color: 'bg-purple-500/10 text-purple-600' },
-];
+import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
+import api from '../lib/api';
+import { Button } from '../components/ui/button';
+import { Badge } from '../components/ui/badge';
+import {
+  Package, Users, ArrowLeftRight, CalendarDays, Wrench,
+  TrendingUp, AlertTriangle, Clock, Plus, BookOpen, ChevronRight,
+} from 'lucide-react';
+import { format } from 'date-fns';
 
 export default function DashboardPage() {
+  const { user } = useAuth();
+  const [stats, setStats] = useState(null);
+  const [overdue, setOverdue] = useState(null);
+  const [upcoming, setUpcoming] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchDashboard();
+  }, []);
+
+  const fetchDashboard = async () => {
+    setLoading(true);
+    try {
+      const [statsRes, overdueRes, upcomingRes] = await Promise.all([
+        api.get('/dashboard/stats'),
+        api.get('/dashboard/overdue'),
+        api.get('/dashboard/upcoming'),
+      ]);
+      setStats(statsRes.data.data);
+      setOverdue(overdueRes.data.data);
+      setUpcoming(upcomingRes.data.data);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const kpiCards = stats
+    ? [
+        { label: 'Assets Available', value: stats.availableCount, icon: Package, color: 'bg-emerald-500/10 text-emerald-600', border: 'border-emerald-500/20' },
+        { label: 'Assets Allocated', value: stats.allocatedCount, icon: Users, color: 'bg-blue-500/10 text-blue-600', border: 'border-blue-500/20' },
+        { label: 'Maintenance Active', value: stats.maintenanceTodayCount, icon: Wrench, color: 'bg-amber-500/10 text-amber-600', border: 'border-amber-500/20' },
+        { label: 'Active Bookings', value: stats.activeBookingsCount, icon: CalendarDays, color: 'bg-purple-500/10 text-purple-600', border: 'border-purple-500/20' },
+        { label: 'Pending Transfers', value: stats.pendingTransfersCount, icon: ArrowLeftRight, color: 'bg-indigo-500/10 text-indigo-600', border: 'border-indigo-500/20' },
+        { label: 'Upcoming Returns', value: stats.upcomingReturnsCount, icon: Clock, color: 'bg-cyan-500/10 text-cyan-600', border: 'border-cyan-500/20' },
+      ]
+    : [];
+
+  const canRegisterAsset = ['AssetManager', 'Admin'].includes(user?.role);
+
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-2xl font-bold text-foreground">Dashboard</h1>
-        <p className="text-muted-foreground mt-1">Overview of your asset management system.</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">Dashboard</h1>
+          <p className="text-muted-foreground mt-1">
+            Welcome back, {user?.name}. Here's your asset management overview.
+          </p>
+        </div>
+        <Badge variant="outline" className="text-xs">{user?.role}</Badge>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        {stats.map((s) => (
-          <div
-            key={s.label}
-            className="rounded-xl border bg-card p-6 shadow-sm hover:shadow-md transition-shadow"
-          >
-            <div className="flex items-center gap-4">
-              <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${s.color}`}>
-                <s.icon className="w-6 h-6" />
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">{s.label}</p>
-                <p className="text-2xl font-bold text-foreground">{s.value}</p>
-              </div>
+      {/* KPI Cards */}
+      {loading ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="rounded-xl border bg-card p-5 animate-pulse">
+              <div className="h-4 w-20 bg-muted rounded mb-3" />
+              <div className="h-8 w-12 bg-muted rounded" />
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+          {kpiCards.map((kpi) => (
+            <div
+              key={kpi.label}
+              className={`rounded-xl border ${kpi.border} bg-card p-5 hover:shadow-md transition-shadow`}
+            >
+              <div className="flex items-center gap-3 mb-3">
+                <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${kpi.color}`}>
+                  <kpi.icon className="w-5 h-5" />
+                </div>
+              </div>
+              <p className="text-2xl font-bold text-foreground">{kpi.value}</p>
+              <p className="text-xs text-muted-foreground mt-1">{kpi.label}</p>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Quick Actions */}
+      <div className="flex gap-3 flex-wrap">
+        {canRegisterAsset && (
+          <Link to="/assets">
+            <Button className="gap-2 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white shadow-md">
+              <Plus className="w-4 h-4" /> Register Asset
+            </Button>
+          </Link>
+        )}
+        <Link to="/bookings">
+          <Button variant="outline" className="gap-2">
+            <BookOpen className="w-4 h-4" /> Book Resource
+          </Button>
+        </Link>
+        <Link to="/maintenance">
+          <Button variant="outline" className="gap-2">
+            <Wrench className="w-4 h-4" /> Raise Maintenance
+          </Button>
+        </Link>
       </div>
 
-      <div className="rounded-xl border bg-card p-8 text-center text-muted-foreground">
-        <Package className="w-12 h-12 mx-auto mb-4 opacity-30" />
-        <p className="text-lg font-medium">Dashboard widgets will be populated in Round 2+</p>
-        <p className="text-sm mt-1">Connect your data sources to see real-time statistics here.</p>
+      {/* Overdue & Upcoming sections */}
+      <div className="grid lg:grid-cols-2 gap-6">
+        {/* OVERDUE — visually separated with red styling */}
+        <div className="border border-red-200 dark:border-red-900/50 rounded-xl overflow-hidden">
+          <div className="bg-red-50 dark:bg-red-900/20 px-5 py-3 flex items-center gap-2 border-b border-red-200 dark:border-red-900/50">
+            <AlertTriangle className="w-5 h-5 text-red-600" />
+            <h3 className="font-semibold text-red-700 dark:text-red-400">Overdue</h3>
+            <Badge variant="destructive" className="ml-auto">
+              {overdue?.overdueAllocations?.length || 0}
+            </Badge>
+          </div>
+          <div className="p-4 space-y-3 bg-card">
+            {overdue?.overdueAllocations?.length > 0 ? (
+              overdue.overdueAllocations.map((a) => (
+                <div key={a._id} className="flex items-center gap-3 p-3 bg-red-50/50 dark:bg-red-900/10 rounded-lg border border-red-100 dark:border-red-900/30">
+                  <div className="w-8 h-8 rounded-full bg-red-500/10 flex items-center justify-center flex-shrink-0">
+                    <AlertTriangle className="w-4 h-4 text-red-500" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium truncate">{a.assetId?.name} ({a.assetId?.assetTag})</p>
+                    <p className="text-xs text-muted-foreground">
+                      Held by {a.holderName} • Due {format(new Date(a.expectedReturnDate), 'MMM d, yyyy')}
+                    </p>
+                  </div>
+                  <Badge variant="destructive" className="text-xs flex-shrink-0">
+                    {Math.ceil((new Date() - new Date(a.expectedReturnDate)) / (1000 * 60 * 60 * 24))}d late
+                  </Badge>
+                </div>
+              ))
+            ) : (
+              <div className="text-center py-6 text-muted-foreground">
+                <Clock className="w-8 h-8 mx-auto mb-2 opacity-30" />
+                <p className="text-sm">No overdue items</p>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* UPCOMING returns */}
+        <div className="border rounded-xl overflow-hidden">
+          <div className="bg-muted/30 px-5 py-3 flex items-center gap-2 border-b">
+            <Clock className="w-5 h-5 text-cyan-600" />
+            <h3 className="font-semibold">Upcoming Returns</h3>
+            <Badge variant="outline" className="ml-auto">
+              {upcoming?.upcomingReturns?.length || 0}
+            </Badge>
+          </div>
+          <div className="p-4 space-y-3 bg-card">
+            {upcoming?.upcomingReturns?.length > 0 ? (
+              upcoming.upcomingReturns.map((a) => (
+                <div key={a._id} className="flex items-center gap-3 p-3 rounded-lg border hover:bg-muted/30 transition-colors">
+                  <div className="w-8 h-8 rounded-full bg-cyan-500/10 flex items-center justify-center flex-shrink-0">
+                    <TrendingUp className="w-4 h-4 text-cyan-600" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium truncate">{a.assetId?.name} ({a.assetId?.assetTag})</p>
+                    <p className="text-xs text-muted-foreground">
+                      Held by {a.holderName} • Due {format(new Date(a.expectedReturnDate), 'MMM d, yyyy')}
+                    </p>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                </div>
+              ))
+            ) : (
+              <div className="text-center py-6 text-muted-foreground">
+                <CalendarDays className="w-8 h-8 mx-auto mb-2 opacity-30" />
+                <p className="text-sm">No upcoming returns this week</p>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
+
+      {/* Total assets summary */}
+      {stats && (
+        <div className="text-xs text-muted-foreground text-center">
+          Total assets in system: {stats.totalAssets}
+        </div>
+      )}
     </div>
   );
 }

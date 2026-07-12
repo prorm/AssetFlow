@@ -1,6 +1,7 @@
 const express = require('express');
 const { Asset, Allocation, User, Department } = require('../models');
 const { auth, authorize } = require('../middleware/auth');
+const { createNotification, createActivityLog } = require('../helpers');
 const router = express.Router();
 
 // POST /api/allocations (create allocation)
@@ -42,6 +43,16 @@ router.post('/', auth, authorize('AssetManager', 'Admin'), async (req, res) => {
 
     asset.status = 'Allocated';
     await asset.save();
+
+    // Notify the new holder
+    if (holderType === 'User') {
+      createNotification(
+        holderId, 'allocation',
+        `Asset ${asset.name} (${asset.assetTag}) has been allocated to you`,
+        { entityType: 'Allocation', entityId: allocation._id }
+      );
+    }
+    createActivityLog(req.user._id, 'Created Allocation', 'Allocation', allocation._id, req.ip);
 
     res.status(201).json({ success: true, data: allocation });
   } catch (error) {
@@ -136,6 +147,8 @@ router.patch('/:id/return', auth, authorize('AssetManager', 'Admin'), async (req
       asset.status = 'Available';
       await asset.save();
     }
+
+    createActivityLog(req.user._id, 'Returned Allocation', 'Allocation', allocation._id, req.ip);
 
     res.json({ success: true, data: allocation });
   } catch (error) {

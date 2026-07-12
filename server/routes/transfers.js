@@ -1,6 +1,7 @@
 const express = require('express');
 const { TransferRequest, Allocation, User, Department } = require('../models');
 const { auth, authorize } = require('../middleware/auth');
+const { createNotification, createActivityLog } = require('../helpers');
 const router = express.Router();
 
 // POST /api/transfers (create transfer request)
@@ -20,6 +21,8 @@ router.post('/', auth, async (req, res) => {
       requestedBy: req.user._id,
       status: 'Requested'
     });
+
+    createActivityLog(req.user._id, 'Created Transfer Request', 'TransferRequest', transfer._id, req.ip);
 
     res.status(201).json({ success: true, data: transfer });
   } catch (error) {
@@ -97,6 +100,23 @@ router.patch('/:id/approve', auth, authorize('AssetManager', 'Admin', 'DeptHead'
     transfer.status = 'Approved';
     await transfer.save();
 
+    // Notify both parties
+    if (transfer.fromHolder.type === 'User') {
+      createNotification(
+        transfer.fromHolder.id, 'transfer',
+        'A transfer request for an asset you held has been approved',
+        { entityType: 'TransferRequest', entityId: transfer._id }
+      );
+    }
+    if (transfer.toHolder.type === 'User') {
+      createNotification(
+        transfer.toHolder.id, 'transfer',
+        'A transfer request has been approved — an asset is being transferred to you',
+        { entityType: 'TransferRequest', entityId: transfer._id }
+      );
+    }
+    createActivityLog(req.user._id, 'Approved Transfer', 'TransferRequest', transfer._id, req.ip);
+
     res.json({ success: true, data: transfer });
   } catch (error) {
     console.error('Error approving transfer:', error);
@@ -113,6 +133,13 @@ router.patch('/:id/reject', auth, authorize('AssetManager', 'Admin', 'DeptHead')
 
     transfer.status = 'Rejected';
     await transfer.save();
+
+    createNotification(
+      transfer.requestedBy, 'transfer',
+      'Your transfer request has been rejected',
+      { entityType: 'TransferRequest', entityId: transfer._id }
+    );
+    createActivityLog(req.user._id, 'Rejected Transfer', 'TransferRequest', transfer._id, req.ip);
 
     res.json({ success: true, data: transfer });
   } catch (error) {

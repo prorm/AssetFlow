@@ -27,11 +27,12 @@ app.use('/api/assets', require('./routes/assets'));
 app.use('/api/allocations', require('./routes/allocations'));
 app.use('/api/transfers', require('./routes/transfers'));
 app.use('/api/bookings', require('./routes/bookings'));
-app.use('/api/allocations', require('./routes/allocations'));
-app.use('/api/transfers', require('./routes/transfers'));
-app.use('/api/bookings', require('./routes/bookings'));
 app.use('/api/maintenance', require('./routes/maintenance'));
-app.use('/api/maintenance', require('./routes/maintenance'));
+app.use('/api/audits', require('./routes/audits'));
+app.use('/api/notifications', require('./routes/notifications'));
+app.use('/api/activity-logs', require('./routes/activityLogs'));
+app.use('/api/reports', require('./routes/reports'));
+app.use('/api/dashboard', require('./routes/dashboard'));
 
 
 // --------------- DB & Start ---------------

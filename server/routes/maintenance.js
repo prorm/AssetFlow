@@ -3,6 +3,7 @@ const multer = require('multer');
 const path = require('path');
 const { Asset, MaintenanceRequest } = require('../models');
 const { auth, authorize } = require('../middleware/auth');
+const { createNotification, createActivityLog } = require('../helpers');
 
 const router = express.Router();
 
@@ -29,6 +30,8 @@ router.post('/', auth, upload.single('photo'), async (req, res) => {
       photo: photoUrl,
       status: 'Pending'
     });
+
+    createActivityLog(req.user._id, 'Created Maintenance Request', 'MaintenanceRequest', mreq._id, req.ip);
 
     res.status(201).json({ success: true, data: mreq });
   } catch (error) {
@@ -74,6 +77,13 @@ router.patch('/:id/approve', auth, authorize('AssetManager', 'Admin'), async (re
       await asset.save();
     }
 
+    createNotification(
+      mreq.raisedBy, 'maintenance',
+      'Your maintenance request has been approved',
+      { entityType: 'MaintenanceRequest', entityId: mreq._id }
+    );
+    createActivityLog(req.user._id, 'Approved Maintenance', 'MaintenanceRequest', mreq._id, req.ip);
+
     res.json({ success: true, data: mreq });
   } catch (error) {
     console.error('Error approving maintenance:', error);
@@ -90,6 +100,13 @@ router.patch('/:id/reject', auth, authorize('AssetManager', 'Admin'), async (req
 
     mreq.status = 'Rejected';
     await mreq.save();
+
+    createNotification(
+      mreq.raisedBy, 'maintenance',
+      'Your maintenance request has been rejected',
+      { entityType: 'MaintenanceRequest', entityId: mreq._id }
+    );
+    createActivityLog(req.user._id, 'Rejected Maintenance', 'MaintenanceRequest', mreq._id, req.ip);
 
     res.json({ success: true, data: mreq });
   } catch (error) {
@@ -109,6 +126,8 @@ router.patch('/:id/assign-technician', auth, authorize('AssetManager', 'Admin'),
     mreq.status = 'TechAssigned';
     await mreq.save();
 
+    createActivityLog(req.user._id, 'Assigned Technician', 'MaintenanceRequest', mreq._id, req.ip);
+
     res.json({ success: true, data: mreq });
   } catch (error) {
     console.error('Error assigning technician:', error);
@@ -125,6 +144,8 @@ router.patch('/:id/start', auth, authorize('AssetManager', 'Admin'), async (req,
 
     mreq.status = 'InProgress';
     await mreq.save();
+
+    createActivityLog(req.user._id, 'Started Maintenance', 'MaintenanceRequest', mreq._id, req.ip);
 
     res.json({ success: true, data: mreq });
   } catch (error) {
@@ -151,6 +172,13 @@ router.patch('/:id/resolve', auth, authorize('AssetManager', 'Admin'), async (re
       asset.status = 'Available';
       await asset.save();
     }
+
+    createNotification(
+      mreq.raisedBy, 'maintenance',
+      'Your maintenance request has been resolved',
+      { entityType: 'MaintenanceRequest', entityId: mreq._id }
+    );
+    createActivityLog(req.user._id, 'Resolved Maintenance', 'MaintenanceRequest', mreq._id, req.ip);
 
     res.json({ success: true, data: mreq });
   } catch (error) {
