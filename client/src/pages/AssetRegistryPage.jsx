@@ -52,7 +52,7 @@ export default function AssetRegistryPage() {
         </div>
       </div>
 
-      <div className="flex-1 min-h-0 bg-card rounded-xl border shadow-sm relative overflow-hidden">
+      <div className="flex-1 min-h-[600px] bg-card rounded-xl border shadow-sm relative overflow-hidden">
         {view === 'inventory' ? <InventoryView /> : <RegisterView onSuccess={() => setView('inventory')} />}
       </div>
     </div>
@@ -69,7 +69,9 @@ function InventoryView() {
     search: searchParams.get('search') || '', 
     categoryId: searchParams.get('categoryId') || 'all', 
     status: searchParams.get('status') || 'all',
-    department: 'all' 
+    department: searchParams.get('departmentId') || 'all',
+    condition: searchParams.get('condition') || 'all',
+    overdue: searchParams.get('overdue') === 'true'
   });
   const [selectedAsset, setSelectedAsset] = useState(null);
   const [history, setHistory] = useState([]);
@@ -77,9 +79,12 @@ function InventoryView() {
   useEffect(() => {
     setFilters(prev => ({
       ...prev,
-      search: searchParams.get('search') || prev.search,
-      categoryId: searchParams.get('categoryId') || prev.categoryId,
-      status: searchParams.get('status') || prev.status,
+      search: searchParams.get('search') || '',
+      categoryId: searchParams.get('categoryId') || 'all',
+      status: searchParams.get('status') || 'all',
+      department: searchParams.get('departmentId') || 'all',
+      condition: searchParams.get('condition') || 'all',
+      overdue: searchParams.get('overdue') === 'true'
     }));
   }, [searchParams]);
 
@@ -99,6 +104,8 @@ function InventoryView() {
       }
       if (filters.categoryId !== 'all') query.push(`categoryId=${filters.categoryId}`);
       if (filters.status !== 'all') query.push(`status=${filters.status}`);
+      if (filters.condition !== 'all') query.push(`condition=${filters.condition}`);
+      if (filters.overdue) query.push('overdue=true');
       
       const qs = query.length ? '?' + query.join('&') : '';
       const res = await api.get('/assets' + qs);
@@ -162,6 +169,17 @@ function InventoryView() {
             <SelectItem value="Reserved">Reserved</SelectItem>
             <SelectItem value="UnderMaintenance">Maintenance</SelectItem>
             <SelectItem value="Retired">Retired</SelectItem>
+          </SelectContent>
+        </Select>
+        <Select value={filters.condition} onValueChange={v => setFilters({ ...filters, condition: v })}>
+          <SelectTrigger className="w-[180px]"><SelectValue placeholder="Condition" /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Conditions</SelectItem>
+            <SelectItem value="New">New</SelectItem>
+            <SelectItem value="Good">Good</SelectItem>
+            <SelectItem value="Fair">Fair</SelectItem>
+            <SelectItem value="Poor">Poor</SelectItem>
+            <SelectItem value="Damaged">Damaged</SelectItem>
           </SelectContent>
         </Select>
       </div>

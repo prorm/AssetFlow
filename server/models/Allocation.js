@@ -8,7 +8,7 @@ const allocationSchema = new mongoose.Schema(
       enum: ['User', 'Department'],
       required: true,
     },
-    holderId: { type: mongoose.Schema.Types.ObjectId, required: true }, // → User or Department
+    holderId: { type: mongoose.Schema.Types.ObjectId, required: true, refPath: 'holderType' }, // → User or Department
     allocatedAt: { type: Date, default: Date.now },
     expectedReturnDate: { type: Date },
     returnedAt: { type: Date },

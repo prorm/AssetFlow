@@ -6,9 +6,16 @@ const { auth, authorize } = require('../middleware/auth');
 
 const router = express.Router();
 
+const fs = require('fs');
+
+const uploadDir = path.join(__dirname, '../uploads');
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, { recursive: true });
+}
+
 const storage = multer.diskStorage({
   destination: function(req, file, cb) {
-    cb(null, path.join(__dirname, '../../uploads'));
+    cb(null, uploadDir);
   },
   filename: function(req, file, cb) {
     cb(null, Date.now() + '-' + file.originalname);
@@ -19,13 +26,24 @@ const upload = multer({ storage });
 // GET /api/assets
 router.get('/', auth, async (req, res) => {
   try {
-    const { assetTag, serialNumber, categoryId, status, location } = req.query;
+    const { assetTag, serialNumber, categoryId, status, condition, location, overdue } = req.query;
     const filter = {};
     if (assetTag) filter.assetTag = new RegExp(assetTag, 'i');
     if (serialNumber) filter.serialNumber = new RegExp(serialNumber, 'i');
     if (categoryId) filter.categoryId = categoryId;
     if (status) filter.status = status;
+    if (condition) filter.condition = condition;
     if (location) filter.location = new RegExp(location, 'i');
+
+    if (overdue === 'true') {
+      const overdueAllocations = await Allocation.find({
+        status: 'Active',
+        expectedReturnDate: { $lt: new Date() }
+      }).lean();
+      const overdueAssetIds = overdueAllocations.map(a => a.assetId);
+      filter._id = { $in: overdueAssetIds };
+      filter.status = 'Allocated'; // Overdue items must be allocated
+    }
 
     const assets = await Asset.find(filter)
       .populate('categoryId', 'name')
