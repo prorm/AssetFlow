@@ -152,6 +152,18 @@ router.patch('/:id/close', auth, authorize('Admin', 'AssetManager'), async (req,
       );
     }
 
+    // Set confirmed-Damaged assets to Damaged condition
+    const damagedAssetIds = cycle.items
+      .filter((i) => i.result === 'Damaged')
+      .map((i) => i.assetId);
+
+    if (damagedAssetIds.length > 0) {
+      await Asset.updateMany(
+        { _id: { $in: damagedAssetIds } },
+        { condition: 'Damaged' }
+      );
+    }
+
     cycle.status = 'Closed';
     await cycle.save();
 

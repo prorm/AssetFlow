@@ -68,11 +68,20 @@ function InventoryView() {
   const [filters, setFilters] = useState({ 
     search: searchParams.get('search') || '', 
     categoryId: searchParams.get('categoryId') || 'all', 
-    status: searchParams.get('status') || 'all', 
+    status: searchParams.get('status') || 'all',
     department: 'all' 
   });
   const [selectedAsset, setSelectedAsset] = useState(null);
   const [history, setHistory] = useState([]);
+
+  useEffect(() => {
+    setFilters(prev => ({
+      ...prev,
+      search: searchParams.get('search') || prev.search,
+      categoryId: searchParams.get('categoryId') || prev.categoryId,
+      status: searchParams.get('status') || prev.status,
+    }));
+  }, [searchParams]);
 
   useEffect(() => {
     fetchAssets();

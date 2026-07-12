@@ -19,13 +19,14 @@ router.post('/smart-search', auth, async (req, res) => {
 Convert the user's natural language query into a JSON object for filtering assets.
 The available fields and their valid values are:
 1. "categoryId": A string ID. Map user intent to one of the following categories: ${categoryInstructions}. If no category matches, omit this field.
-2. "status": Must be one of exactly: "Available", "Allocated", "Reserved", "UnderMaintenance", "Lost", "Retired", "Disposed". Omit if not specified.
+2. "status": Must be one of exactly: "Available", "Allocated", "Reserved", "UnderMaintenance", "Lost", "Retired", "Disposed". YOU MUST include this if the user asks for a specific status (e.g. "available" -> "Available", "broken" -> "UnderMaintenance").
 3. "location": A string representing a location. Omit if not specified.
 4. "search": A string to search by asset tag or serial number. Omit if not specified.
 
-Return ONLY a JSON object with these keys if they are found in the query. For example: {"categoryId": "...", "status": "..."}`;
+Return ONLY a valid JSON object with these keys if they are found in the query. For example: {"categoryId": "...", "status": "Available"}`;
 
     const parsedFilters = await askGroq(systemPrompt, query);
+    console.log("AI Parsed Filters:", parsedFilters);
     
     // If the groq call fails (e.g. returns null), just return an empty filter object so the app continues to function.
     if (!parsedFilters) {
