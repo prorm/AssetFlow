@@ -160,8 +160,8 @@ router.patch('/:id/resolve', auth, authorize('AssetManager', 'Admin'), async (re
     const { resolution } = req.body;
     const mreq = await MaintenanceRequest.findById(req.params.id);
     if (!mreq) return res.status(404).json({ error: 'Request not found' });
-    if (mreq.status !== 'TechAssigned' && mreq.status !== 'InProgress') {
-      return res.status(400).json({ error: 'Can only resolve TechAssigned or InProgress requests' });
+    if (mreq.status !== 'Approved' && mreq.status !== 'TechAssigned' && mreq.status !== 'InProgress') {
+      return res.status(400).json({ error: 'Can only resolve Approved, TechAssigned or InProgress requests' });
     }
 
     mreq.status = 'Resolved';

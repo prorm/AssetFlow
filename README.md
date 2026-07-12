@@ -1,2 +1,95 @@
-# AssetFlow
-Team Penguin's From MSRIT's Submission for the Odoo Hackathon 2026
+# AssetFlow 📦
+
+**Team Penguin's Submission for the Odoo Hackathon 2026**
+
+AssetFlow is a comprehensive, full-stack **Asset Management and Resource Booking System** built with the MERN stack (MongoDB, Express, React, Node.js) and styled with Tailwind CSS. It empowers organizations to track hardware, software, and bookable spaces throughout their entire lifecycle.
+
+---
+
+## 🚀 Key Features
+
+### 🏢 1. Organization & Hierarchy Management
+- **Departments**: Create hierarchical departments, assign department heads, and track which assets belong where.
+- **Custom Categories**: Create dynamic asset categories (e.g., Laptops, Furniture) and define custom metadata fields specific to that category (e.g., CPU, RAM for laptops).
+- **Role-Based Access Control (RBAC)**: Support for multiple roles including `Admin`, `AssetManager`, `DeptHead`, `Employee`, `Technician`, and `Auditor`. The UI dynamically adapts to the user's role.
+
+### 💻 2. Asset Registry & Lifecycle Tracking
+- **Inventory Management**: Register assets with photos, conditions, physical locations, and custom metadata. Automatically generates sequential Asset Tags (e.g., AF-0001).
+- **Lifecycle History**: View the complete, unified history of an asset (allocations, returns, maintenance, and audits) in a single drawer view.
+
+### 🔄 3. Allocations & Transfers
+- **Smart Allocations**: Allocate assets to individual users or entire departments with expected return dates.
+- **Transfer Requests & Conflict Handling**: If an asset is already in use, users can seamlessly submit a "Transfer Request" to the current holder. When approved by a manager, the system automatically closes the old allocation and creates a new one.
+- **Overdue Tracking**: Automatically flags and highlights overdue allocations.
+
+### 📅 4. Resource Booking (Meeting Rooms / Equipment)
+- **Bookable Assets**: Mark specific assets (like Projectors or Conference Rooms) as "Bookable".
+- **Scheduling & Conflicts**: Users can select date/time slots. The system features built-in conflict detection to prevent overlapping reservations.
+
+### 🛠️ 5. Maintenance & Servicing Workflow
+- **Multi-step Resolution**: Users can raise maintenance tickets (with priority levels and photos).
+- **Workflow**: `Pending` → `Approved` (changes asset status to UnderMaintenance) → `TechAssigned` → `InProgress` → `Resolved` (changes asset status back to Available).
+
+### 🔍 6. Physical Asset Audits
+- **Audit Cycles**: Asset Managers can create targeted audit cycles bounded by date ranges, departments, or locations.
+- **Verification**: Assigned Auditors use the system to physically verify assets, marking them as *Verified*, *Missing*, or *Damaged*.
+- **Discrepancy Reporting**: Closing an audit cycle generates a discrepancy report and automatically updates the status of missing items to `Lost`.
+
+### 📊 7. Dashboard, Analytics & Reporting
+- **Real-time Dashboard**: KPI cards displaying available assets, active maintenance, and pending transfers. Includes visual indicators for Overdue items and Upcoming returns.
+- **Reports**: Downloadable CSV reports for Asset Utilization, Maintenance Frequency, Department Summaries, and more.
+
+### 🔔 8. Notifications & Activity Logging
+- **In-App Notifications**: Real-time bell alerts for things like approved transfers, assigned maintenance, and new audit cycles.
+- **Global Activity Logs**: A system-wide, immutable audit trail of every significant action, searchable by entity type.
+
+---
+
+## 🛠️ Tech Stack
+
+- **Frontend**: React (Vite), React Router, Tailwind CSS, Lucide React (Icons), `date-fns` for date formatting, Axios for API calls. UI built using custom Tailwind components inspired by shadcn/ui.
+- **Backend**: Node.js, Express.js.
+- **Database**: MongoDB & Mongoose.
+- **Storage**: Multer for local photo uploads.
+- **Authentication**: JWT (JSON Web Tokens) + bcrypt for password hashing.
+
+---
+
+## ⚙️ Running Locally
+
+1. **Install Dependencies**
+   ```bash
+   cd client && npm install
+   cd ../server && npm install
+   ```
+
+2. **Environment Variables**
+   Create a `.env` file in the `/server` directory:
+   ```env
+   PORT=5000
+   MONGO_URI=mongodb://127.0.0.1:27017/assetflow
+   JWT_SECRET=your_super_secret_key_123
+   ```
+
+3. **Start the Development Servers**
+   In terminal 1 (Backend):
+   ```bash
+   cd server
+   npm run dev
+   ```
+   
+   In terminal 2 (Frontend):
+   ```bash
+   cd client
+   npm run dev
+   ```
+
+4. **Seed Database (Optional)**
+   To generate the default `admin@assetflow.com` user and initial test data:
+   ```bash
+   cd server
+   node scripts/seed.js
+   ```
+
+## 📜 License
+Developed for the Odoo Hackathon 2026.

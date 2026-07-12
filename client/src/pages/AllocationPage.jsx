@@ -63,8 +63,8 @@ export default function AllocationPage() {
 
   const fetchAssets = async () => {
     try {
-      const { data } = await api.get('/assets?status=Available');
-      setAssets(data.data);
+      const { data } = await api.get('/assets');
+      setAssets(data.data.filter(a => ['Available', 'Allocated'].includes(a.status)));
     } catch (err) {
       console.error(err);
     }

@@ -366,6 +366,20 @@ function RegisterView({ onSuccess }) {
             <Input value={formData.location} onChange={e => setFormData({ ...formData, location: e.target.value })} placeholder="e.g. Server Room A" />
           </div>
           <div className="space-y-2 md:col-span-2">
+            <label className="flex items-center gap-3 cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={formData.isBookable}
+                onChange={e => setFormData({ ...formData, isBookable: e.target.checked })}
+                className="w-5 h-5 rounded border-input accent-primary"
+              />
+              <div>
+                <span className="text-sm font-medium">Mark as Bookable</span>
+                <p className="text-xs text-muted-foreground">Allow this asset to be reserved/booked by users (e.g. meeting rooms, projectors)</p>
+              </div>
+            </label>
+          </div>
+          <div className="space-y-2 md:col-span-2">
             <label className="text-sm font-medium">Photo</label>
             <div className="border-2 border-dashed rounded-lg p-6 flex flex-col items-center justify-center bg-muted/20 hover:bg-muted/40 transition-colors">
               <Input type="file" accept="image/*" className="max-w-xs" onChange={e => setPhoto(e.target.files[0])} />

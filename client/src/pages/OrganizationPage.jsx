@@ -137,8 +137,8 @@ function DepartmentsTab({ departments, refresh }) {
     e.preventDefault();
     try {
       const payload = { ...formData };
-      if (!payload.headUserId) delete payload.headUserId;
-      if (!payload.parentDepartmentId) delete payload.parentDepartmentId;
+      if (!payload.headUserId || payload.headUserId === 'none') delete payload.headUserId;
+      if (!payload.parentDepartmentId || payload.parentDepartmentId === 'none') delete payload.parentDepartmentId;
 
       if (editId) {
         await api.put(`/departments/${editId}`, payload);

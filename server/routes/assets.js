@@ -17,7 +17,7 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 // GET /api/assets
-router.get('/', auth, authorize('AssetManager', 'Admin'), async (req, res) => {
+router.get('/', auth, async (req, res) => {
   try {
     const { assetTag, serialNumber, categoryId, status, location } = req.query;
     const filter = {};
@@ -38,7 +38,7 @@ router.get('/', auth, authorize('AssetManager', 'Admin'), async (req, res) => {
 });
 
 // GET /api/assets/:id
-router.get('/:id', auth, authorize('AssetManager', 'Admin'), async (req, res) => {
+router.get('/:id', auth, async (req, res) => {
   try {
     const asset = await Asset.findById(req.params.id)
       .populate('categoryId');

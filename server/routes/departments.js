@@ -22,7 +22,7 @@ router.get('/', auth, authorize('Admin'), async (req, res) => {
 // POST /api/departments
 router.post('/', auth, authorize('Admin'), async (req, res) => {
   try {
-    const { name, headUserId, parentDepartmentId } = req.body;
+    const { name, headUserId, parentDepartmentId, code } = req.body;
     if (!name) {
       return res.status(400).json({ error: 'Name is required' });
     }
@@ -32,10 +32,16 @@ router.post('/', auth, authorize('Admin'), async (req, res) => {
       return res.status(409).json({ error: 'Department name already exists' });
     }
 
+    let deptCode = code;
+    if (!deptCode) {
+      deptCode = name.replace(/\s+/g, '').substring(0, 3).toUpperCase() + Math.floor(100 + Math.random() * 900);
+    }
+
     const department = await Department.create({
       name,
-      headUserId: headUserId || null,
-      parentDepartmentId: parentDepartmentId || null
+      code: deptCode,
+      headUserId: (headUserId && headUserId !== 'none') ? headUserId : null,
+      parentDepartmentId: (parentDepartmentId && parentDepartmentId !== 'none') ? parentDepartmentId : null
     });
     createActivityLog(req.user._id, 'Created Department', 'Department', department._id, req.ip);
     res.status(201).json({ success: true, data: department });
@@ -49,11 +55,16 @@ router.post('/', auth, authorize('Admin'), async (req, res) => {
 router.put('/:id', auth, authorize('Admin'), async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, headUserId, parentDepartmentId, status } = req.body;
+    const { name, headUserId, parentDepartmentId, status, code } = req.body;
+
+    const updateData = { name, status };
+    if (code) updateData.code = code;
+    updateData.headUserId = (headUserId && headUserId !== 'none') ? headUserId : null;
+    updateData.parentDepartmentId = (parentDepartmentId && parentDepartmentId !== 'none') ? parentDepartmentId : null;
 
     const department = await Department.findByIdAndUpdate(
       id,
-      { name, headUserId, parentDepartmentId, status },
+      updateData,
       { new: true, runValidators: true }
     );
 
