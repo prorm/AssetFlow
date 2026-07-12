@@ -5,6 +5,7 @@ const assetSchema = new mongoose.Schema(
     assetTag: { type: String, unique: true },   // auto-generated in pre-save
     name: { type: String, required: true, trim: true },
     categoryId: { type: mongoose.Schema.Types.ObjectId, ref: 'AssetCategory' },
+    departmentId: { type: mongoose.Schema.Types.ObjectId, ref: 'Department' },
     serialNumber: { type: String, trim: true },
     acquisitionDate: { type: Date },
     acquisitionCost: { type: Number },

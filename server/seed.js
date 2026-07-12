@@ -1,41 +1,37 @@
-/**
- * seed.js — Run once to create the default admin account.
- * Usage: node seed.js   (or: npm run seed from root)
- */
 require('dotenv').config();
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
-const User = require('./models/User');
+const { User } = require('./models');
 
-const ADMIN_EMAIL = 'admin@assetflow.com';
-const ADMIN_PASSWORD = 'Admin@123';
-const ADMIN_NAME = 'System Admin';
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/assetflow';
 
 async function seed() {
-  const uri = process.env.MONGODB_URI || 'mongodb://localhost:27017/assetflow';
-  await mongoose.connect(uri);
-  console.log('✅  Connected to MongoDB');
+  try {
+    await mongoose.connect(MONGODB_URI);
+    console.log('Connected to MongoDB');
 
-  const existing = await User.findOne({ email: ADMIN_EMAIL });
-  if (existing) {
-    console.log(`ℹ️  Admin "${ADMIN_EMAIL}" already exists — skipping.`);
-  } else {
-    const passwordHash = await bcrypt.hash(ADMIN_PASSWORD, 12);
-    await User.create({
-      name: ADMIN_NAME,
-      email: ADMIN_EMAIL,
-      passwordHash,
-      role: 'Admin',
-      status: 'Active',
-    });
-    console.log(`🌱  Seeded admin: ${ADMIN_EMAIL} / ${ADMIN_PASSWORD}`);
+    const email = 'admin@assetflow.com';
+    const existing = await User.findOne({ email });
+
+    if (existing) {
+      console.log('Admin user already exists.');
+    } else {
+      const passwordHash = await bcrypt.hash('Admin123!', 12);
+      await User.create({
+        name: 'Admin User',
+        email,
+        passwordHash,
+        role: 'Admin',
+        status: 'Active'
+      });
+      console.log('Admin user created successfully.');
+    }
+  } catch (error) {
+    console.error('Error seeding data:', error);
+  } finally {
+    mongoose.disconnect();
+    console.log('Disconnected from MongoDB');
   }
-
-  await mongoose.disconnect();
-  console.log('👋  Done.');
 }
 
-seed().catch((err) => {
-  console.error('❌  Seed error:', err);
-  process.exit(1);
-});
+seed();

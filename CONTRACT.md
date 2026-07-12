@@ -18,7 +18,6 @@
 ## Data Models
 
 ### User
-```js
 {
   name:          String,       // required
   email:         String,       // required, unique
@@ -29,10 +28,8 @@
   createdAt:     Date,
   updatedAt:     Date
 }
-```
 
 ### Department
-```js
 {
   name:               String,   // required, unique
   headUserId:         ObjectId → User,
@@ -41,10 +38,8 @@
   createdAt:          Date,
   updatedAt:          Date
 }
-```
 
 ### AssetCategory
-```js
 {
   name:         String,   // required, unique
   customFields: [{
@@ -55,10 +50,8 @@
   createdAt: Date,
   updatedAt: Date
 }
-```
 
 ### Asset
-```js
 {
   assetTag:        String,   // auto-generated AF-0001, unique
   name:            String,   // required
@@ -74,10 +67,8 @@
   createdAt:       Date,
   updatedAt:       Date
 }
-```
 
 ### Allocation
-```js
 {
   assetId:            ObjectId → Asset,     // required
   holderType:         Enum['User','Department'],
@@ -89,10 +80,8 @@
   createdAt:          Date,
   updatedAt:          Date
 }
-```
 
 ### TransferRequest
-```js
 {
   assetId:     ObjectId → Asset,
   fromHolder:  { type: Enum['User','Department'], id: ObjectId },
@@ -102,10 +91,8 @@
   createdAt:   Date,
   updatedAt:   Date
 }
-```
 
 ### Booking
-```js
 {
   assetId:   ObjectId → Asset,
   bookedBy:  ObjectId → User,
@@ -115,10 +102,8 @@
   createdAt: Date,
   updatedAt: Date
 }
-```
 
 ### MaintenanceRequest
-```js
 {
   assetId:  ObjectId → Asset,
   raisedBy: ObjectId → User,
@@ -129,10 +114,8 @@
   createdAt: Date,
   updatedAt: Date
 }
-```
 
 ### AuditCycle
-```js
 {
   scope: {
     department: ObjectId → Department,
@@ -149,10 +132,8 @@
   createdAt: Date,
   updatedAt: Date
 }
-```
 
 ### Notification
-```js
 {
   userId:        ObjectId → User,
   type:          String,
@@ -161,10 +142,8 @@
   read:          Boolean,   // default false
   createdAt:     Date
 }
-```
 
 ### ActivityLog
-```js
 {
   userId:     ObjectId → User,
   action:     String,
@@ -173,7 +152,6 @@
   timestamp:  Date,    // default Date.now
   ipAddress:  String
 }
-```
 
 ---
 
@@ -190,14 +168,33 @@
 | GET    | `/api/auth/me`            | —                             | `{user}`                    | Yes  |
 | GET    | `/api/health`             | —                             | `{status:'ok',timestamp}`   | No   |
 
+### Master Data & Users (Round 2)
+| Method | Path                      | Body                          | Response                    | Auth |
+|--------|---------------------------|-------------------------------|-----------------------------|------|
+| GET    | `/api/users`              | Query: `department,role,status` | `{success, data: [User]}`   | Admin |
+| PATCH  | `/api/users/:id/role`     | `{role}`                      | `{success, data: User}`     | Admin |
+| GET    | `/api/departments`        | —                             | `{success, data: [Dept]}`   | Admin |
+| POST   | `/api/departments`        | `{name, headUserId, ...}`     | `{success, data: Dept}`     | Admin |
+| PUT    | `/api/departments/:id`    | `{name, status, ...}`         | `{success, data: Dept}`     | Admin |
+| GET    | `/api/categories`         | —                             | `{success, data: [Cat]}`    | Admin |
+| POST   | `/api/categories`         | `{name, customFields}`        | `{success, data: Cat}`      | Admin |
+| PUT    | `/api/categories/:id`     | `{name, customFields}`        | `{success, data: Cat}`      | Admin |
+
+### Assets (Round 2)
+| Method | Path                      | Body                          | Response                    | Auth |
+|--------|---------------------------|-------------------------------|-----------------------------|------|
+| GET    | `/api/assets`             | Query filters                 | `{success, data: [Asset]}`  | AssetManager+ |
+| GET    | `/api/assets/:id`         | —                             | `{success, data: Asset}`    | AssetManager+ |
+| POST   | `/api/assets`             | FormData (with photo)         | `{success, data: Asset}`    | AssetManager+ |
+| PUT    | `/api/assets/:id`         | FormData (with photo)         | `{success, data: Asset}`    | AssetManager+ |
+| GET    | `/api/assets/:id/history` | —                             | `{success, data: [...]}`    | AssetManager+ |
+
 ---
 
 ## Branch Flow
 
-```
 main
  └── round-1-foundation     (Prompt 1-6: skeleton, models, auth, seed, UI shell)
  └── round-2-core-data      (CRUD: users, departments, categories, assets)
  └── round-3-transactions   (allocations, transfers, bookings, maintenance)
  └── round-4-ops-polish     (audit, reports, activity logs, notifications, polish)
-```
