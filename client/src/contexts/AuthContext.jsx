@@ -34,6 +34,19 @@ export function AuthProvider({ children }) {
 
   const login = useCallback(async (email, password) => {
     const res = await api.post('/auth/login', { email, password });
+    if (res.data.requires2FA) {
+      return { requires2FA: true, email: res.data.email };
+    }
+    const { token: t, user: u } = res.data;
+    localStorage.setItem('assetflow_token', t);
+    localStorage.setItem('assetflow_user', JSON.stringify(u));
+    setToken(t);
+    setUser(u);
+    return { requires2FA: false, user: u };
+  }, []);
+
+  const verifyOtp = useCallback(async (email, otp) => {
+    const res = await api.post('/auth/verify-otp', { email, otp });
     const { token: t, user: u } = res.data;
     localStorage.setItem('assetflow_token', t);
     localStorage.setItem('assetflow_user', JSON.stringify(u));

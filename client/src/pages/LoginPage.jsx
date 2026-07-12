@@ -7,13 +7,15 @@ import { Package, ArrowRight, Eye, EyeOff } from 'lucide-react';
 
 export default function LoginPage() {
   const [isLogin, setIsLogin] = useState(true);
+  const [step, setStep] = useState('credentials');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [otp, setOtp] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const { login, signup } = useAuth();
+  const { login, signup, verifyOtp } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -22,13 +24,32 @@ export default function LoginPage() {
     setLoading(true);
     try {
       if (isLogin) {
-        await login(email, password);
+        const res = await login(email, password);
+        if (res.requires2FA) {
+          setStep('otp');
+          setLoading(false);
+          return;
+        }
       } else {
         await signup(name, email, password);
       }
       navigate('/dashboard');
     } catch (err) {
       setError(err.response?.data?.error || 'Something went wrong.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleVerifyOtp = async (e) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+    try {
+      await verifyOtp(email, otp);
+      navigate('/dashboard');
+    } catch (err) {
+      setError(err.response?.data?.error || 'Invalid OTP.');
     } finally {
       setLoading(false);
     }
@@ -73,12 +94,14 @@ export default function LoginPage() {
 
           <div>
             <h2 className="text-2xl font-bold text-foreground">
-              {isLogin ? 'Welcome back' : 'Create your account'}
+              {step === 'otp' ? 'Enter Authentication Code' : (isLogin ? 'Welcome back' : 'Create your account')}
             </h2>
             <p className="mt-1 text-sm text-muted-foreground">
-              {isLogin
-                ? 'Enter your credentials to access your account.'
-                : 'Fill in your details to get started.'}
+              {step === 'otp'
+                ? `We sent a 6-digit code to ${email}`
+                : (isLogin
+                  ? 'Enter your credentials to access your account.'
+                  : 'Fill in your details to get started.')}
             </p>
           </div>
 
@@ -88,101 +111,134 @@ export default function LoginPage() {
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-5">
-            {!isLogin && (
+          {step === 'otp' ? (
+            <form onSubmit={handleVerifyOtp} className="space-y-5">
               <div className="space-y-2">
-                <label htmlFor="name" className="text-sm font-medium text-foreground">
-                  Full Name
+                <label htmlFor="otp" className="text-sm font-medium text-foreground">
+                  6-Digit Code
                 </label>
                 <Input
-                  id="name"
+                  id="otp"
                   type="text"
-                  placeholder="John Doe"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  required={!isLogin}
-                />
-              </div>
-            )}
-
-            <div className="space-y-2">
-              <label htmlFor="email" className="text-sm font-medium text-foreground">
-                Email Address
-              </label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="you@company.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-            </div>
-
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <label htmlFor="password" className="text-sm font-medium text-foreground">
-                  Password
-                </label>
-                {isLogin && (
-                  <button
-                    type="button"
-                    className="text-xs text-primary hover:underline"
-                    onClick={() => alert('Password reset email sent (mock)')}
-                  >
-                    Forgot password?
-                  </button>
-                )}
-              </div>
-              <div className="relative">
-                <Input
-                  id="password"
-                  type={showPassword ? 'text' : 'password'}
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="123456"
+                  value={otp}
+                  onChange={(e) => setOtp(e.target.value)}
+                  maxLength={6}
                   required
-                  minLength={6}
                 />
+              </div>
+              <Button type="submit" className="w-full" size="lg" disabled={loading}>
+                {loading ? 'Verifying…' : 'Verify Code'}
+              </Button>
+              <p className="text-center text-sm text-muted-foreground">
                 <button
                   type="button"
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                  onClick={() => setShowPassword(!showPassword)}
-                  tabIndex={-1}
+                  className="text-primary font-medium hover:underline"
+                  onClick={() => setStep('credentials')}
                 >
-                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  Back to login
                 </button>
-              </div>
-            </div>
-
-            <Button type="submit" className="w-full" size="lg" disabled={loading}>
-              {loading ? (
-                <span className="flex items-center gap-2">
-                  <span className="w-4 h-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
-                  {isLogin ? 'Signing in…' : 'Creating account…'}
-                </span>
-              ) : (
-                <span className="flex items-center gap-2">
-                  {isLogin ? 'Sign In' : 'Create Account'}
-                  <ArrowRight className="w-4 h-4" />
-                </span>
+              </p>
+            </form>
+          ) : (
+            <form onSubmit={handleSubmit} className="space-y-5">
+              {!isLogin && (
+                <div className="space-y-2">
+                  <label htmlFor="name" className="text-sm font-medium text-foreground">
+                    Full Name
+                  </label>
+                  <Input
+                    id="name"
+                    type="text"
+                    placeholder="John Doe"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    required={!isLogin}
+                  />
+                </div>
               )}
-            </Button>
-          </form>
 
-          <p className="text-center text-sm text-muted-foreground">
-            {isLogin ? "Don't have an account?" : 'Already have an account?'}{' '}
-            <button
-              type="button"
-              className="text-primary font-medium hover:underline"
-              onClick={() => {
-                setIsLogin(!isLogin);
-                setError('');
-              }}
-            >
-              {isLogin ? 'Sign up' : 'Sign in'}
-            </button>
-          </p>
+              <div className="space-y-2">
+                <label htmlFor="email" className="text-sm font-medium text-foreground">
+                  Email Address
+                </label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="you@company.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <label htmlFor="password" className="text-sm font-medium text-foreground">
+                    Password
+                  </label>
+                  {isLogin && (
+                    <button
+                      type="button"
+                      className="text-xs text-primary hover:underline"
+                      onClick={() => alert('Password reset email sent (mock)')}
+                    >
+                      Forgot password?
+                    </button>
+                  )}
+                </div>
+                <div className="relative">
+                  <Input
+                    id="password"
+                    type={showPassword ? 'text' : 'password'}
+                    placeholder="••••••••"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    minLength={6}
+                  />
+                  <button
+                    type="button"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                    onClick={() => setShowPassword(!showPassword)}
+                    tabIndex={-1}
+                  >
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+              </div>
+
+              <Button type="submit" className="w-full" size="lg" disabled={loading}>
+                {loading ? (
+                  <span className="flex items-center gap-2">
+                    <span className="w-4 h-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
+                    {isLogin ? 'Signing in…' : 'Creating account…'}
+                  </span>
+                ) : (
+                  <span className="flex items-center gap-2">
+                    {isLogin ? 'Sign In' : 'Create Account'}
+                    <ArrowRight className="w-4 h-4" />
+                  </span>
+                )}
+              </Button>
+            </form>
+          )}
+
+          {step === 'credentials' && (
+            <p className="text-center text-sm text-muted-foreground">
+              {isLogin ? "Don't have an account?" : 'Already have an account?'}{' '}
+              <button
+                type="button"
+                className="text-primary font-medium hover:underline"
+                onClick={() => {
+                  setIsLogin(!isLogin);
+                  setError('');
+                }}
+              >
+                {isLogin ? 'Sign up' : 'Sign in'}
+              </button>
+            </p>
+          )}
         </div>
       </div>
     </div>

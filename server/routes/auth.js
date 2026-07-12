@@ -1,10 +1,12 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const { Resend } = require('resend');
 const { User } = require('../models');
 const { auth } = require('../middleware/auth');
 
 const router = express.Router();
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 const signToken = (user) =>
   jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, {
@@ -78,10 +80,58 @@ router.post('/login', async (req, res) => {
       return res.status(401).json({ error: 'Invalid credentials.' });
     }
 
+    // Generate 6-digit OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    user.otp = otp;
+    user.otpExpiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 mins
+    await user.save();
+
+    // Send email via Resend
+    if (process.env.RESEND_API_KEY) {
+      await resend.emails.send({
+        from: 'AssetFlow <onboarding@resend.dev>',
+        to: user.email,
+        subject: 'Your AssetFlow Login Code',
+        html: `<p>Your authentication code is: <strong>${otp}</strong></p><p>It expires in 10 minutes.</p>`,
+      });
+    } else {
+      console.log(`[DEV MODE] OTP for ${user.email} is ${otp}`);
+    }
+
+    res.json({ requires2FA: true, email: user.email });
+  } catch (err) {
+    console.error('Login error:', err);
+    res.status(500).json({ error: 'Server error.' });
+  }
+});
+
+// ─── POST /api/auth/verify-otp ──────────────────────────────────────────
+router.post('/verify-otp', async (req, res) => {
+  try {
+    const { email, otp } = req.body;
+
+    if (!email || !otp) {
+      return res.status(400).json({ error: 'Email and OTP are required.' });
+    }
+
+    const user = await User.findOne({ email: email.toLowerCase() });
+    if (!user) {
+      return res.status(401).json({ error: 'Invalid or expired OTP.' });
+    }
+
+    if (user.otp !== otp || !user.otpExpiresAt || user.otpExpiresAt < new Date()) {
+      return res.status(401).json({ error: 'Invalid or expired OTP.' });
+    }
+
+    // Clear OTP
+    user.otp = undefined;
+    user.otpExpiresAt = undefined;
+    await user.save();
+
     const token = signToken(user);
     res.json({ token, user: sanitizeUser(user) });
   } catch (err) {
-    console.error('Login error:', err);
+    console.error('Verify OTP error:', err);
     res.status(500).json({ error: 'Server error.' });
   }
 });

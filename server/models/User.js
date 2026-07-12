@@ -16,6 +16,8 @@ const userSchema = new mongoose.Schema(
       enum: ['Active', 'Inactive'],
       default: 'Active',
     },
+    otp: { type: String },
+    otpExpiresAt: { type: Date },
   },
   { timestamps: true }
 );
