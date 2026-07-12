@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { toast } from 'sonner';
 import { useAuth } from '../contexts/AuthContext';
 import api from '../lib/api';
 import { Button } from '../components/ui/button';
@@ -83,7 +84,7 @@ export default function AuditPage() {
       setActiveTab('list');
       fetchCycles();
     } catch (err) {
-      alert(err.response?.data?.error || 'Error creating audit cycle');
+      toast.error(err.response?.data?.error || 'Error creating audit cycle');
     }
   };
 
@@ -93,7 +94,7 @@ export default function AuditPage() {
       await api.patch(`/audits/${selectedCycle._id}/items/${assetId}`, { result, notes });
       fetchCycleDetail(selectedCycle._id);
     } catch (err) {
-      alert(err.response?.data?.error || 'Error updating item');
+      toast.error(err.response?.data?.error || 'Error updating item');
     }
   };
 
@@ -104,7 +105,7 @@ export default function AuditPage() {
       fetchCycleDetail(selectedCycle._id);
       fetchCycles();
     } catch (err) {
-      alert(err.response?.data?.error || 'Error closing audit');
+      toast.error(err.response?.data?.error || 'Error closing audit');
     }
   };
 

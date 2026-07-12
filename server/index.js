@@ -33,6 +33,7 @@ app.use('/api/notifications', require('./routes/notifications'));
 app.use('/api/activity-logs', require('./routes/activityLogs'));
 app.use('/api/reports', require('./routes/reports'));
 app.use('/api/dashboard', require('./routes/dashboard'));
+app.use('/api/ai', require('./routes/ai'));
 
 
 // --------------- DB & Start ---------------

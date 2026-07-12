@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import api from '@/lib/api';
 import { Button } from '@/components/ui/button';
@@ -150,7 +151,7 @@ function DepartmentsTab({ departments, refresh }) {
       setEditId(null);
       refresh();
     } catch (err) {
-      alert(err.response?.data?.error || 'Error saving department');
+      toast.error(err.response?.data?.error || 'Error saving department');
     }
   };
 
@@ -279,7 +280,7 @@ function CategoriesTab({ categories, refresh }) {
       setEditId(null);
       refresh();
     } catch (err) {
-      alert(err.response?.data?.error || 'Error saving category');
+      toast.error(err.response?.data?.error || 'Error saving category');
     }
   };
 
@@ -419,7 +420,7 @@ function EmployeesTab({ users, departments, refresh }) {
       setPromoteId(null);
       refresh();
     } catch (err) {
-      alert(err.response?.data?.error || 'Error promoting user');
+      toast.error(err.response?.data?.error || 'Error promoting user');
     }
   };
 

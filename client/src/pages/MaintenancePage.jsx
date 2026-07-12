@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { toast } from 'sonner';
 import { useAuth } from '../contexts/AuthContext';
 import api from '../lib/api';
 import { Button } from '../components/ui/button';
@@ -64,7 +65,7 @@ export default function MaintenancePage() {
       setFormData({ assetId: '', issue: '', priority: 'Low', photo: null });
       fetchRequests();
     } catch (err) {
-      alert(err.response?.data?.error || 'Error creating request');
+      toast.error(err.response?.data?.error || 'Error creating request');
     }
   };
 
@@ -73,7 +74,7 @@ export default function MaintenancePage() {
       await api.patch(`/maintenance/${id}/${action}`);
       fetchRequests();
     } catch (err) {
-      alert(err.response?.data?.error || `Error performing ${action}`);
+      toast.error(err.response?.data?.error || `Error performing ${action}`);
     }
   };
 
@@ -85,7 +86,7 @@ export default function MaintenancePage() {
       setTechModal({ open: false, id: null, technicianId: '' });
       fetchRequests();
     } catch (err) {
-      alert(err.response?.data?.error || 'Error assigning technician');
+      toast.error(err.response?.data?.error || 'Error assigning technician');
     }
   };
 
@@ -97,7 +98,7 @@ export default function MaintenancePage() {
       setResolveModal({ open: false, id: null, resolution: '' });
       fetchRequests();
     } catch (err) {
-      alert(err.response?.data?.error || 'Error resolving request');
+      toast.error(err.response?.data?.error || 'Error resolving request');
     }
   };
 
@@ -187,6 +188,9 @@ export default function MaintenancePage() {
             ))}
             {requests.length === 0 && !loading && (
               <tr><td colSpan="7" className="p-4 text-center text-muted-foreground">No maintenance requests found.</td></tr>
+            )}
+            {loading && (
+              <tr><td colSpan="7" className="p-4 text-center text-muted-foreground">Loading maintenance requests...</td></tr>
             )}
           </tbody>
         </table>

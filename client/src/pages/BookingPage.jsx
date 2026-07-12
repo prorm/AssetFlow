@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { toast } from 'sonner';
 import { useAuth } from '../contexts/AuthContext';
 import api from '../lib/api';
 import { Button } from '../components/ui/button';
@@ -78,7 +79,7 @@ export default function BookingPage() {
       if (err.response?.status === 409) {
         setConflictInfo(err.response.data.conflictingSlot);
       } else {
-        alert(err.response?.data?.error || 'Error creating booking');
+        toast.error(err.response?.data?.error || 'Error creating booking');
       }
     }
   };
@@ -89,7 +90,7 @@ export default function BookingPage() {
       await api.patch(`/bookings/${id}/cancel`);
       fetchBookings();
     } catch (err) {
-      alert(err.response?.data?.error || 'Error cancelling booking');
+      toast.error(err.response?.data?.error || 'Error cancelling booking');
     }
   };
 
@@ -106,7 +107,7 @@ export default function BookingPage() {
       if (err.response?.status === 409) {
         setConflictInfo(err.response.data.conflictingSlot);
       } else {
-        alert(err.response?.data?.error || 'Error rescheduling booking');
+        toast.error(err.response?.data?.error || 'Error rescheduling booking');
       }
     }
   };
@@ -177,6 +178,9 @@ export default function BookingPage() {
                 ))}
                 {bookings.length === 0 && !loading && (
                   <tr><td colSpan="6" className="p-4 text-center text-muted-foreground">No bookings found.</td></tr>
+                )}
+                {loading && (
+                  <tr><td colSpan="6" className="p-4 text-center text-muted-foreground">Loading bookings...</td></tr>
                 )}
               </tbody>
             </table>

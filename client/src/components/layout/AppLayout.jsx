@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Link, useLocation, Outlet, useNavigate } from 'react-router-dom';
+import { Toaster } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import {
@@ -132,6 +133,7 @@ export default function AppLayout() {
 
   return (
     <div className="min-h-screen bg-background flex">
+      <Toaster position="top-right" />
       {/* Mobile overlay */}
       {sidebarOpen && (
         <div

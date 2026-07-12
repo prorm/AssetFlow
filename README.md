@@ -43,6 +43,10 @@ AssetFlow is a comprehensive, full-stack **Asset Management and Resource Booking
 - **In-App Notifications**: Real-time bell alerts for things like approved transfers, assigned maintenance, and new audit cycles.
 - **Global Activity Logs**: A system-wide, immutable audit trail of every significant action, searchable by entity type.
 
+### 🤖 9. Ask AssetFlow (AI Assistant)
+- **Natural Language Search**: A powerful smart-search command bar on the dashboard powered by Groq and Llama 3. Users can type queries like *"show overdue laptops in engineering"* and the AI automatically parses it into exact category, status, and search filters for the Asset Registry.
+- **Secure & Fast**: Powered by ultra-fast Llama-3 endpoints, passing filters directly to existing secure endpoints without exposing API keys to the frontend.
+
 ---
 
 ## 🛠️ Tech Stack

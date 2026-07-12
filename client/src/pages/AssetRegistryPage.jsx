@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import api from '@/lib/api';
 import { Button } from '@/components/ui/button';
@@ -59,9 +61,16 @@ export default function AssetRegistryPage() {
 
 function InventoryView() {
   const [assets, setAssets] = useState([]);
+  const [loading, setLoading] = useState(false);
   const [categories, setCategories] = useState([]);
   const [departments, setDepartments] = useState([]);
-  const [filters, setFilters] = useState({ search: '', categoryId: 'all', status: 'all', department: 'all' });
+  const [searchParams] = useSearchParams();
+  const [filters, setFilters] = useState({ 
+    search: searchParams.get('search') || '', 
+    categoryId: searchParams.get('categoryId') || 'all', 
+    status: searchParams.get('status') || 'all', 
+    department: 'all' 
+  });
   const [selectedAsset, setSelectedAsset] = useState(null);
   const [history, setHistory] = useState([]);
 
@@ -72,6 +81,7 @@ function InventoryView() {
   }, [filters]);
 
   const fetchAssets = async () => {
+    setLoading(true);
     try {
       let query = [];
       if (filters.search) {
@@ -80,13 +90,14 @@ function InventoryView() {
       }
       if (filters.categoryId !== 'all') query.push(`categoryId=${filters.categoryId}`);
       if (filters.status !== 'all') query.push(`status=${filters.status}`);
-      // if (filters.department !== 'all') query.push(`department=${filters.department}`); // Needs support in backend
       
       const qs = query.length ? '?' + query.join('&') : '';
       const res = await api.get('/assets' + qs);
       setAssets(res.data.data);
     } catch (err) {
       console.error(err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -176,8 +187,11 @@ function InventoryView() {
                 <td className="px-4 py-3 text-muted-foreground">{asset.condition}</td>
               </tr>
             ))}
-            {assets.length === 0 && (
+            {assets.length === 0 && !loading && (
               <tr><td colSpan="5" className="text-center py-12 text-muted-foreground">No assets found.</td></tr>
+            )}
+            {loading && (
+              <tr><td colSpan="5" className="text-center py-12 text-muted-foreground">Loading assets...</td></tr>
             )}
           </tbody>
         </table>
@@ -309,10 +323,10 @@ function RegisterView({ onSuccess }) {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
       
-      alert(`Asset registered successfully! Tag: ${res.data.data.assetTag}`);
+      toast.success(`Asset registered successfully! Tag: ${res.data.data.assetTag}`);
       onSuccess();
     } catch (err) {
-      alert(err.response?.data?.error || 'Failed to register asset');
+      toast.error(err.response?.data?.error || 'Failed to register asset');
     } finally {
       setLoading(false);
     }

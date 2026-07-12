@@ -1,0 +1,72 @@
+<USER_REQUEST>
+The feature: "Ask AssetFlow" — natural language command bar
+One text input on the Dashboard. Someone types "show overdue laptops in engineering" and it hits your existing /api/assets filter endpoint with AI-parsed filters, no new business logic required. This is the single highest-impact, lowest-risk AI feature available to you right now.
+Critical constraint to bake into the prompts: the Groq API key must never be called from the browser — it goes through your Express backend only, or it leaks in the client bundle. Say this explicitly to the agent.
+
+Setup (do this once, ~5 min)
+bashgit checkout main && git pull
+git checkout -b feature-ai-assistant
+Add to server/.env (already gitignored from earlier):
+GROQ_API_KEY=your_key_here
+Prompts — paste one at a time
+Prompt 1: In server/, create server/services/groqService.js exporting an
+async function askGroq(systemPrompt, userPrompt). It should call
+https://api.groq.com/openai/v1/chat/completions using Node's built-in
+fetch (no new dependency needed), with:
+- Authorization: Bearer ${process.env.GROQ_API_KEY}
+- model: "llama-3.1-8b-instant"
+- temperature: 0.2
+- response_format: { type: "json_object" }
+- messages: [{role:"system", content: systemPrompt}, {role:"user", content: userPrompt}]
+- an 8-second timeout using AbortController
+On any failure (timeout, non-200, malformed JSON), catch it and return null
+— never throw. Log the error server-side but don't let it crash the request.
+
+Prompt 2: Look at the existing GET /api/assets route in
+server/routes/assets.js and note exactly which query params it accepts
+(category, status, department, location, etc.) and their exact string
+values (e.g. status enum values). Do not change that route.
+
+Prompt 3: Create POST /api/ai/smart-search in a new
+server/routes/ai.js. Body: { query: string }. It should:
+- Build a system prompt for Groq that lists the exact filter fields and
+  valid enum values from Prompt 2, and instructs the model to return
+  ONLY a JSON object like {"category": "...", "status": "...",
+  "dep
+<truncated 6637 bytes>
+ss every page
+Do not touch any routing, auth, or business logic — this is styling and
+UX feedback only.
+5. Demo script + dry run (do this yourself, not the agent)
+Write out the exact click path, then run it twice with a timer:
+1. Login as Admin → point out KPI dashboard is live, not mocked
+2. Organization Setup → promote an employee to DeptHead (shows realistic 
+   role flow)
+3. Asset Registry → register a new asset, watch AF-00XX tag generate
+4. Allocation → allocate the new asset → try allocating it again as a 
+   different "session" → show the block + Request Transfer
+5. Booking → try booking into the occupied slot → show overlap rejection
+   → book the open slot successfully
+6. Maintenance → raise a request → approve it → jump to Asset Registry, 
+   show status flipped to UnderMaintenance
+7. Audit → open the closed cycle → show discrepancy report, point out 
+   the Lost asset
+8. Dashboard → back here, point out Overdue section, notification bell
+Time it. If you're over ~90 seconds, cut steps 6 or 7 down to "here's one I already ran" instead of live-clicking through the whole workflow.
+What NOT to do with the remaining time
+Skip the Python live-data script unless everything above is done with 30+ minutes to spare — it's a nice-to-have that can also cause a confusing state mid-demo if it flips something right as you're clicking. Skip any new report/chart work. Skip refactoring anything that already works.
+</USER_REQUEST>
+<ADDITIONAL_METADATA>
+The current local time is: 2026-07-12T13:49:31+05:30.
+
+The user's current state is as follows:
+Active Document: d:\AssetFlow\server\.env (LANGUAGE_UNSPECIFIED)
+Cursor is on line: 8
+Other open documents:
+- d:\AssetFlow\server\.env (LANGUAGE_UNSPECIFIED)
+- d:\AssetFlow\DEMO_SCRIPT.md (LANGUAGE_MARKDOWN)
+Running terminal commands:
+- npm run dev (in d:\AssetFlow\server, running for 51m12s)
+- python live_data.py (in d:\AssetFlow\server\scripts, running for 47m37s)
+- npm run dev (in d:\AssetFlow\client, running for 36m39s)
+</ADDITIONAL_METADATA>

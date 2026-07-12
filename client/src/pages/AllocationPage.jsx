@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { toast } from 'sonner';
 import { useAuth } from '../contexts/AuthContext';
 import api from '../lib/api';
 import { Button } from '../components/ui/button';
@@ -99,7 +100,7 @@ export default function AllocationPage() {
       if (err.response?.status === 409) {
         setConflictInfo(err.response.data.currentHolder);
       } else {
-        alert(err.response?.data?.error || 'Error allocating asset');
+        toast.error(err.response?.data?.error || 'Error allocating asset');
       }
     }
   };
@@ -113,7 +114,7 @@ export default function AllocationPage() {
       setActiveTab('transfers');
       setConflictInfo(null);
     } catch (err) {
-      alert(err.response?.data?.error || 'Error requesting transfer');
+      toast.error(err.response?.data?.error || 'Error requesting transfer');
     }
   };
 
@@ -126,7 +127,7 @@ export default function AllocationPage() {
       setReturnModal({ open: false, id: null, assetTag: '', assetName: '', condition: 'Good', notes: '' });
       fetchAllocations();
     } catch (err) {
-      alert(err.response?.data?.error || 'Error returning asset');
+      toast.error(err.response?.data?.error || 'Error returning asset');
     }
   };
 
@@ -135,7 +136,7 @@ export default function AllocationPage() {
       await api.patch(`/transfers/${id}/approve`);
       fetchTransfers();
     } catch (err) {
-      alert(err.response?.data?.error || 'Error approving transfer');
+      toast.error(err.response?.data?.error || 'Error approving transfer');
     }
   };
 
@@ -144,7 +145,7 @@ export default function AllocationPage() {
       await api.patch(`/transfers/${id}/reject`, { reason: 'Rejected by admin' });
       fetchTransfers();
     } catch (err) {
-      alert(err.response?.data?.error || 'Error rejecting transfer');
+      toast.error(err.response?.data?.error || 'Error rejecting transfer');
     }
   };
 
@@ -210,6 +211,9 @@ export default function AllocationPage() {
               ))}
               {allocations.length === 0 && !loading && (
                 <tr><td colSpan="7" className="p-4 text-center text-muted-foreground">No allocations found.</td></tr>
+              )}
+              {loading && (
+                <tr><td colSpan="7" className="p-4 text-center text-muted-foreground">Loading allocations...</td></tr>
               )}
             </tbody>
           </table>
@@ -322,6 +326,9 @@ export default function AllocationPage() {
               ))}
               {transfers.length === 0 && !loading && (
                 <tr><td colSpan="6" className="p-4 text-center text-muted-foreground">No transfers found.</td></tr>
+              )}
+              {loading && (
+                <tr><td colSpan="6" className="p-4 text-center text-muted-foreground">Loading transfers...</td></tr>
               )}
             </tbody>
           </table>

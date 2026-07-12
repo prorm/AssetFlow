@@ -1,17 +1,21 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 import { useAuth } from '../contexts/AuthContext';
 import api from '../lib/api';
 import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
 import {
   Package, Users, ArrowLeftRight, CalendarDays, Wrench,
-  TrendingUp, AlertTriangle, Clock, Plus, BookOpen, ChevronRight,
+  TrendingUp, AlertTriangle, Clock, Plus, BookOpen, ChevronRight, Search, Sparkles
 } from 'lucide-react';
 import { format } from 'date-fns';
 
 export default function DashboardPage() {
   const { user } = useAuth();
+  const navigate = useNavigate();
+  const [askQuery, setAskQuery] = useState('');
+  const [askLoading, setAskLoading] = useState(false);
   const [stats, setStats] = useState(null);
   const [overdue, setOverdue] = useState(null);
   const [upcoming, setUpcoming] = useState(null);
@@ -62,6 +66,46 @@ export default function DashboardPage() {
           </p>
         </div>
         <Badge variant="outline" className="text-xs">{user?.role}</Badge>
+      </div>
+
+      {/* Ask AssetFlow Command Bar */}
+      <div className="bg-gradient-to-r from-indigo-500/10 via-purple-500/10 to-pink-500/10 p-1 rounded-2xl shadow-sm border border-indigo-500/20">
+        <form onSubmit={async (e) => {
+          e.preventDefault();
+          if (!askQuery.trim()) return;
+          setAskLoading(true);
+          try {
+            const res = await api.post('/ai/smart-search', { query: askQuery });
+            const filters = res.data.data;
+            const params = new URLSearchParams();
+            if (filters.categoryId) params.append('categoryId', filters.categoryId);
+            if (filters.status) params.append('status', filters.status);
+            if (filters.search) params.append('search', filters.search);
+            if (filters.location) params.append('search', filters.location); // Fallback to search if location provided
+            
+            navigate(`/assets?${params.toString()}`);
+          } catch (err) {
+            toast.error('Could not process request');
+          } finally {
+            setAskLoading(false);
+            setAskQuery('');
+          }
+        }} className="relative flex items-center bg-card rounded-xl overflow-hidden">
+          <div className="pl-4 text-indigo-500">
+            <Sparkles className="w-5 h-5" />
+          </div>
+          <input
+            type="text"
+            placeholder='Ask AssetFlow (e.g. "show overdue laptops in engineering")'
+            className="w-full flex-1 h-12 bg-transparent border-none focus:ring-0 px-4 text-sm outline-none"
+            value={askQuery}
+            onChange={(e) => setAskQuery(e.target.value)}
+            disabled={askLoading}
+          />
+          <Button type="submit" disabled={askLoading} className="h-full rounded-none px-6 bg-indigo-600 hover:bg-indigo-700 text-white">
+            {askLoading ? 'Thinking...' : 'Search'}
+          </Button>
+        </form>
       </div>
 
       {/* KPI Cards */}
