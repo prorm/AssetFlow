@@ -189,6 +189,79 @@
 | PUT    | `/api/assets/:id`         | FormData (with photo)         | `{success, data: Asset}`    | AssetManager+ |
 | GET    | `/api/assets/:id/history` | —                             | `{success, data: [...]}`    | AssetManager+ |
 
+### Allocations (Round 3)
+| Method | Path                             | Body                                        | Response                             | Auth           |
+|--------|----------------------------------|---------------------------------------------|--------------------------------------|----------------|
+| POST   | `/api/allocations`               | `{assetId, holderType, holderId, expectedReturnDate}` | `201: {success, data: Allocation}` | AssetManager+  |
+|        |                                  |                                             | `409: {error, currentHolder: {name, id, type}}` |        |
+| GET    | `/api/allocations`               | Query: `assetId, holderId, status`          | `{success, data: [Allocation]}`     | Authenticated  |
+| GET    | `/api/allocations/:id`           | —                                           | `{success, data: Allocation}`       | Authenticated  |
+| PATCH  | `/api/allocations/:id/return`    | `{condition, notes}`                        | `{success, data: Allocation}`       | AssetManager+  |
+
+> **Computed field**: Every Allocation returned by GET includes `isOverdue: Boolean` — true when `status === 'Active' && expectedReturnDate < now && !returnedAt`.
+
+#### 409 Response Shape (Allocation Conflict)
+```json
+{
+  "error": "Currently held by John Doe",
+  "currentHolder": {
+    "name": "John Doe",
+    "id": "664f...",
+    "type": "User"
+  }
+}
+```
+
+---
+
+### Transfers (Round 3)
+| Method | Path                             | Body                                        | Response                             | Auth           |
+|--------|----------------------------------|---------------------------------------------|--------------------------------------|----------------|
+| POST   | `/api/transfers`                 | `{assetId, toHolder: {type, id}}`           | `201: {success, data: TransferRequest}` | Authenticated |
+| GET    | `/api/transfers`                 | Query: `assetId, status`                    | `{success, data: [TransferRequest]}` | Authenticated |
+| PATCH  | `/api/transfers/:id/approve`     | —                                           | `{success, data: TransferRequest}`  | AssetManager/Admin/DeptHead |
+| PATCH  | `/api/transfers/:id/reject`      | `{reason}`                                  | `{success, data: TransferRequest}`  | AssetManager/Admin/DeptHead |
+
+---
+
+### Bookings (Round 3)
+| Method | Path                             | Body                                        | Response                             | Auth           |
+|--------|----------------------------------|---------------------------------------------|--------------------------------------|----------------|
+| POST   | `/api/bookings`                  | `{assetId, startTime, endTime}`             | `201: {success, data: Booking}`     | Authenticated  |
+|        |                                  |                                             | `409: {error, conflictingSlot: {...}}` |              |
+| GET    | `/api/bookings`                  | Query: `assetId, bookedBy, status`          | `{success, data: [Booking]}`        | Authenticated  |
+| PATCH  | `/api/bookings/:id/cancel`       | —                                           | `{success, data: Booking}`          | Booker/AssetManager+ |
+| PATCH  | `/api/bookings/:id/reschedule`   | `{startTime, endTime}`                      | `{success, data: Booking}`          | Booker/AssetManager+ |
+
+> **Status auto-derivation**: GET responses compute status on read from current time vs `startTime`/`endTime` — `Upcoming` (now < start), `Ongoing` (start ≤ now ≤ end), `Completed` (now > end). `Cancelled` is stored and preserved.
+
+#### 409 Response Shape (Booking Conflict)
+```json
+{
+  "error": "Booking conflicts with existing reservation",
+  "conflictingSlot": {
+    "startTime": "2026-07-12T09:00:00.000Z",
+    "endTime": "2026-07-12T10:00:00.000Z",
+    "bookedBy": { "name": "Jane Smith", "email": "jane@assetflow.com" }
+  }
+}
+```
+
+---
+
+### Maintenance (Round 3)
+| Method | Path                                    | Body                                   | Response                               | Auth           |
+|--------|-----------------------------------------|----------------------------------------|----------------------------------------|----------------|
+| POST   | `/api/maintenance`                      | FormData: `{assetId, issue, priority, photo}` | `201: {success, data: MaintenanceRequest}` | Authenticated |
+| GET    | `/api/maintenance`                      | Query: `assetId, status, priority`     | `{success, data: [MaintenanceRequest]}` | Authenticated |
+| PATCH  | `/api/maintenance/:id/approve`          | —                                      | `{success, data}`                      | AssetManager+  |
+| PATCH  | `/api/maintenance/:id/reject`           | `{reason}`                             | `{success, data}`                      | AssetManager+  |
+| PATCH  | `/api/maintenance/:id/assign-technician`| `{technicianId}`                       | `{success, data}`                      | AssetManager+  |
+| PATCH  | `/api/maintenance/:id/start`            | —                                      | `{success, data}`                      | AssetManager+  |
+| PATCH  | `/api/maintenance/:id/resolve`          | `{resolution}`                         | `{success, data}`                      | AssetManager+  |
+
+> **Status transitions**: Pending → Approved (asset → UnderMaintenance) → TechAssigned → InProgress → Resolved (asset → Available). Pending → Rejected (no asset change).
+
 ---
 
 ## Branch Flow
@@ -198,3 +271,4 @@ main
  └── round-2-core-data      (CRUD: users, departments, categories, assets)
  └── round-3-transactions   (allocations, transfers, bookings, maintenance)
  └── round-4-ops-polish     (audit, reports, activity logs, notifications, polish)
+
