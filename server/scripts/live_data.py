@@ -10,7 +10,7 @@ import os
 import sys
 import time
 import random
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 try:
     from pymongo import MongoClient
@@ -67,12 +67,12 @@ def main():
             # 3. Nudge a couple expectedReturnDate values to create overdue flags
             active_allocs = list(db.allocations.find({
                 'status': 'Active',
-                'expectedReturnDate': {'$gt': datetime.utcnow()}
+                'expectedReturnDate': {'$gt': datetime.now(timezone.utc)}
             }).limit(5))
             if active_allocs:
                 to_nudge = random.sample(active_allocs, min(random.randint(1, 2), len(active_allocs)))
                 for alloc in to_nudge:
-                    past_date = datetime.utcnow() - timedelta(days=random.randint(1, 5))
+                    past_date = datetime.now(timezone.utc) - timedelta(days=random.randint(1, 5))
                     db.allocations.update_one(
                         {'_id': alloc['_id']},
                         {'$set': {'expectedReturnDate': past_date}}
@@ -82,11 +82,11 @@ def main():
             # 4. Nudge a booking time to the past for demo
             upcoming_bookings = list(db.bookings.find({
                 'status': 'Upcoming',
-                'startTime': {'$gt': datetime.utcnow()}
+                'startTime': {'$gt': datetime.now(timezone.utc)}
             }).limit(3))
             if upcoming_bookings:
                 booking = random.choice(upcoming_bookings)
-                past_start = datetime.utcnow() - timedelta(hours=random.randint(1, 24))
+                past_start = datetime.now(timezone.utc) - timedelta(hours=random.randint(1, 24))
                 past_end = past_start + timedelta(hours=2)
                 db.bookings.update_one(
                     {'_id': booking['_id']},
