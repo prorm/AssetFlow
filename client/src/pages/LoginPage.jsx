@@ -37,28 +37,28 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex">
       {/* Left panel — branding */}
-      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-primary via-blue-600 to-indigo-700 p-12 flex-col justify-between relative overflow-hidden">
+      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-primary via-primary to-slate-900 p-12 flex-col justify-between relative overflow-hidden">
         <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PHBhdGggZD0iTTM2IDM0djJoLTJ2LTJoMnptMC00djJoLTJ2LTJoMnptLTQgOHYyaC0ydi0yaDJ6bTQgMHYyaC0ydi0yaDJ6bS00LTR2MmgtMnYtMmgyem0wLTR2MmgtMnYtMmgyem04IDR2MmgtMnYtMmgyem0wIDR2MmgtMnYtMmgyeiIvPjwvZz48L2c+PC9zdmc+')] opacity-40"></div>
         <div className="relative z-10">
           <div className="flex items-center gap-3 mb-2">
-            <div className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
-              <Package className="w-6 h-6 text-white" />
+            <div className="w-10 h-10 bg-primary-foreground/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
+              <Package className="w-6 h-6 text-primary-foreground" />
             </div>
-            <span className="text-2xl font-bold text-white">AssetFlow</span>
+            <span className="text-2xl font-bold text-primary-foreground">AssetFlow</span>
           </div>
-          <p className="text-blue-100 text-sm">Enterprise Asset Management</p>
+          <p className="text-primary-foreground/70 text-sm">Enterprise Asset Management</p>
         </div>
         <div className="relative z-10 space-y-6">
-          <h1 className="text-4xl font-bold text-white leading-tight">
+          <h1 className="text-4xl font-bold text-primary-foreground leading-tight">
             Track, manage &<br />optimize your assets<br />
-            <span className="text-blue-200">effortlessly.</span>
+            <span className="text-primary-foreground/60">effortlessly.</span>
           </h1>
-          <p className="text-blue-100 max-w-md">
+          <p className="text-primary-foreground/70 max-w-md">
             From allocation to audits, AssetFlow gives your organization full visibility and
             control over every asset in real time.
           </p>
         </div>
-        <p className="relative z-10 text-blue-200 text-sm">© 2026 AssetFlow. All rights reserved.</p>
+        <p className="relative z-10 text-primary-foreground/60 text-sm">© 2026 AssetFlow. All rights reserved.</p>
       </div>
 
       {/* Right panel — form */}
@@ -158,7 +158,7 @@ export default function LoginPage() {
             <Button type="submit" className="w-full" size="lg" disabled={loading}>
               {loading ? (
                 <span className="flex items-center gap-2">
-                  <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  <span className="w-4 h-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
                   {isLogin ? 'Signing in…' : 'Creating account…'}
                 </span>
               ) : (

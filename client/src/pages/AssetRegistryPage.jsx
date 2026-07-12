@@ -123,7 +123,7 @@ function InventoryView() {
   const getStatusColor = (status) => {
     switch(status) {
       case 'Available': return 'bg-[#4ade80]/10 text-[#4ade80] border-[#4ade80]/20';
-      case 'Allocated': return 'bg-[#60a5fa]/10 text-[#60a5fa] border-[#60a5fa]/20';
+      case 'Allocated': return 'bg-primary/10 text-primary border-primary/20';
       case 'Reserved': return 'bg-[#fbbf24]/10 text-[#fbbf24] border-[#fbbf24]/20';
       case 'UnderMaintenance': return 'bg-[#fb923c]/10 text-[#fb923c] border-[#fb923c]/20';
       case 'Disposed': 

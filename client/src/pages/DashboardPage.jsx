@@ -7,7 +7,7 @@ import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
 import {
   Package, Users, ArrowLeftRight, CalendarDays, Wrench,
-  TrendingUp, AlertTriangle, Clock, Plus, BookOpen, ChevronRight, Search, Sparkles
+  AlertTriangle, Undo2, CheckCircle2, Plus, BookOpen, ChevronRight, Sparkles
 } from 'lucide-react';
 import { format } from 'date-fns';
 
@@ -46,11 +46,11 @@ export default function DashboardPage() {
   const kpiCards = stats
     ? [
         { label: 'Assets Available', value: stats.availableCount, icon: Package, color: 'bg-emerald-500/10 text-emerald-600', border: 'border-emerald-500/20' },
-        { label: 'Assets Allocated', value: stats.allocatedCount, icon: Users, color: 'bg-blue-500/10 text-blue-600', border: 'border-blue-500/20' },
+        { label: 'Assets Allocated', value: stats.allocatedCount, icon: Users, color: 'bg-primary/10 text-primary', border: 'border-primary/20' },
         { label: 'Maintenance Active', value: stats.maintenanceTodayCount, icon: Wrench, color: 'bg-amber-500/10 text-amber-600', border: 'border-amber-500/20' },
         { label: 'Active Bookings', value: stats.activeBookingsCount, icon: CalendarDays, color: 'bg-purple-500/10 text-purple-600', border: 'border-purple-500/20' },
         { label: 'Pending Transfers', value: stats.pendingTransfersCount, icon: ArrowLeftRight, color: 'bg-indigo-500/10 text-indigo-600', border: 'border-indigo-500/20' },
-        { label: 'Upcoming Returns', value: stats.upcomingReturnsCount, icon: Clock, color: 'bg-cyan-500/10 text-cyan-600', border: 'border-cyan-500/20' },
+        { label: 'Upcoming Returns', value: stats.upcomingReturnsCount, icon: Undo2, color: 'bg-cyan-500/10 text-cyan-600', border: 'border-cyan-500/20' },
       ]
     : [];
 
@@ -102,7 +102,7 @@ export default function DashboardPage() {
             onChange={(e) => setAskQuery(e.target.value)}
             disabled={askLoading}
           />
-          <Button type="submit" disabled={askLoading} className="h-full rounded-none px-6 bg-indigo-600 hover:bg-indigo-700 text-white">
+          <Button type="submit" disabled={askLoading} className="h-full rounded-none px-6 bg-indigo-600 hover:bg-indigo-700 text-primary-foreground">
             {askLoading ? 'Thinking...' : 'Search'}
           </Button>
         </form>
@@ -141,7 +141,7 @@ export default function DashboardPage() {
       <div className="flex gap-3 flex-wrap">
         {canRegisterAsset && (
           <Link to="/assets">
-            <Button className="gap-2 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white shadow-md">
+            <Button className="gap-2 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-primary-foreground shadow-md">
               <Plus className="w-4 h-4" /> Register Asset
             </Button>
           </Link>
@@ -189,7 +189,7 @@ export default function DashboardPage() {
               ))
             ) : (
               <div className="text-center py-6 text-muted-foreground">
-                <Clock className="w-8 h-8 mx-auto mb-2 opacity-30" />
+                <CheckCircle2 className="w-8 h-8 mx-auto mb-2 opacity-30" />
                 <p className="text-sm">No overdue items</p>
               </div>
             )}
@@ -199,7 +199,7 @@ export default function DashboardPage() {
         {/* UPCOMING returns */}
         <div className="border rounded-xl overflow-hidden">
           <div className="bg-muted/30 px-5 py-3 flex items-center gap-2 border-b">
-            <Clock className="w-5 h-5 text-cyan-600" />
+            <Undo2 className="w-5 h-5 text-cyan-600" />
             <h3 className="font-semibold">Upcoming Returns</h3>
             <Badge variant="outline" className="ml-auto">
               {upcoming?.upcomingReturns?.length || 0}
@@ -210,7 +210,7 @@ export default function DashboardPage() {
               upcoming.upcomingReturns.map((a) => (
                 <div key={a._id} className="flex items-center gap-3 p-3 rounded-lg border hover:bg-muted/30 transition-colors">
                   <div className="w-8 h-8 rounded-full bg-cyan-500/10 flex items-center justify-center flex-shrink-0">
-                    <TrendingUp className="w-4 h-4 text-cyan-600" />
+                    <Undo2 className="w-4 h-4 text-cyan-600" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium truncate">{a.assetId?.name} ({a.assetId?.assetTag})</p>

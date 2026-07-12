@@ -70,7 +70,7 @@ export default function ActivityLogsPage() {
 
   const typeIcon = (type) => {
     const colors = {
-      allocation: 'bg-blue-500/10 text-blue-600',
+      allocation: 'bg-primary/10 text-primary',
       transfer: 'bg-purple-500/10 text-purple-600',
       booking: 'bg-emerald-500/10 text-emerald-600',
       maintenance: 'bg-amber-500/10 text-amber-600',
@@ -105,7 +105,7 @@ export default function ActivityLogsPage() {
           <Bell className="w-4 h-4 mr-2" />
           Notifications
           {unreadCount > 0 && (
-            <span className="ml-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+            <span className="ml-2 bg-red-500 text-primary-foreground text-xs rounded-full w-5 h-5 flex items-center justify-center">
               {unreadCount > 99 ? '99+' : unreadCount}
             </span>
           )}

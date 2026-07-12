@@ -8,7 +8,7 @@ import {
   PieChart, Pie, Cell,
 } from 'recharts';
 
-const COLORS = ['#6366f1', '#22c55e', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4', '#ec4899', '#14b8a6'];
+const COLORS = ['#222c59', '#22c55e', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4', '#ec4899', '#14b8a6'];
 
 function exportCSV(data, filename) {
   if (!data || data.length === 0) return;
@@ -152,7 +152,7 @@ export default function ReportsPage() {
                   <YAxis />
                   <Tooltip contentStyle={{ borderRadius: 8, border: '1px solid var(--border, #e5e7eb)' }} />
                   <Legend />
-                  <Bar dataKey="Allocations" fill="#6366f1" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="Allocations" fill="#222c59" radius={[4, 4, 0, 0]} />
                   <Bar dataKey="Bookings" fill="#22c55e" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
@@ -220,7 +220,7 @@ export default function ReportsPage() {
                   <YAxis />
                   <Tooltip contentStyle={{ borderRadius: 8 }} />
                   <Legend />
-                  <Bar dataKey="Active" fill="#6366f1" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="Active" fill="#222c59" radius={[4, 4, 0, 0]} />
                   <Bar dataKey="Returned" fill="#94a3b8" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
@@ -256,7 +256,7 @@ export default function ReportsPage() {
                           title={`${day} ${hi}:00 — ${count} bookings`}
                           className="aspect-square rounded-sm border"
                           style={{
-                            backgroundColor: count > 0 ? `rgba(99, 102, 241, ${opacity})` : 'transparent',
+                            backgroundColor: count > 0 ? `rgba(34, 44, 89, ${opacity})` : 'transparent',
                           }}
                         />
                       );
@@ -313,7 +313,7 @@ export default function ReportsPage() {
 
           <div className="border rounded-lg p-5 bg-card">
             <h3 className="font-semibold mb-4 flex items-center gap-2">
-              <Activity className="w-5 h-5 text-blue-500" />
+              <Activity className="w-5 h-5 text-primary" />
               Assets Currently Under Maintenance
             </h3>
             {data.underMaintenance?.length > 0 ? (
