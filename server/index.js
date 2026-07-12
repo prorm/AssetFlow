@@ -24,6 +24,14 @@ app.use('/api/departments', require('./routes/departments'));
 app.use('/api/categories', require('./routes/categories'));
 app.use('/api/users', require('./routes/users'));
 app.use('/api/assets', require('./routes/assets'));
+app.use('/api/allocations', require('./routes/allocations'));
+app.use('/api/transfers', require('./routes/transfers'));
+app.use('/api/bookings', require('./routes/bookings'));
+app.use('/api/allocations', require('./routes/allocations'));
+app.use('/api/transfers', require('./routes/transfers'));
+app.use('/api/bookings', require('./routes/bookings'));
+app.use('/api/maintenance', require('./routes/maintenance'));
+app.use('/api/maintenance', require('./routes/maintenance'));
 
 
 // --------------- DB & Start ---------------
