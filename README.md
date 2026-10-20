@@ -1,6 +1,6 @@
 # AssetFlow 📦
 
-**Team Penguin's Submission for the Odoo Hackathon 2026**
+**Team Dolo 650's Submission for Devops Assignment**
 
 AssetFlow is a comprehensive, full-stack **Asset Management and Resource Booking System** built with the MERN stack (MongoDB, Express, React, Node.js) and styled with Tailwind CSS. It empowers organizations to track hardware, software, and bookable spaces throughout their entire lifecycle.
 
