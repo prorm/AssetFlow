@@ -38,8 +38,6 @@ AssetFlow is a comprehensive, full-stack **Asset Management and Resource Booking
 
 ## 2. Server Configuration
 
-**`server/.env`**:
-
 **`server/index.js` (Entry point & routes setup)**:
 ```javascript
 require('dotenv').config();
