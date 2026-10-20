@@ -1,0 +1,6 @@
+---
+app_name: assetflow
+app_port: 5000
+app_dir: "/opt/{{ app_name }}"
+app_user: appuser
+app_env: {}

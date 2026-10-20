@@ -1,0 +1,16 @@
+---
+- name: Deploy AssetFlow server
+  hosts: appservers
+  become: true
+  vars:
+    app_name: assetflow
+    app_port: 5001
+    app_artifact: "{{ playbook_dir }}/../build/assetflow-server.tgz"
+    app_env:
+      PORT: "{{ app_port }}"
+      MONGODB_URI: "mongodb://127.0.0.1:27017/assetflow"
+      JWT_SECRET: "ansible-demo-secret"
+      JWT_EXPIRES_IN: "7d"
+      GROQ_API_KEY: "dummy"
+  roles:
+    - appdeploy
