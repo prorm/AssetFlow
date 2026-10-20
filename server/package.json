@@ -4,10 +4,10 @@
   "description": "AssetFlow API Server",
   "main": "index.js",
   "scripts": {
-  "dev": "nodemon index.js",
-  "start": "node index.js",
-  "test": "jest --forceExit"
-},
+    "dev": "nodemon index.js",
+    "start": "node index.js",
+    "test": "jest --forceExit"
+  },
   "dependencies": {
     "bcryptjs": "^3.0.2",
     "cors": "^2.8.5",
@@ -19,6 +19,7 @@
     "resend": "^6.17.2"
   },
   "devDependencies": {
+    "jest": "^30.5.2",
     "nodemon": "^3.1.10"
   }
 }
