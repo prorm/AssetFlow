@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: assetflow
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: assetflow
+  template:
+    metadata:
+      labels:
+        app: assetflow
+    spec:
+      containers:
+        - name: assetflow
+          image: assetflow-server:1.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 5000
+          envFrom:
+            - configMapRef:
+                name: assetflow-config
+            - secretRef:
+                name: assetflow-secret
+          readinessProbe:
+            httpGet:
+              path: /api/ready
+              port: 5000
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /api/health
+              port: 5000
+            initialDelaySeconds: 20
+            periodSeconds: 10
