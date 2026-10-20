@@ -39,17 +39,6 @@ AssetFlow is a comprehensive, full-stack **Asset Management and Resource Booking
 ## 2. Server Configuration
 
 **`server/.env`**:
-```env
-PORT=5000
-MONGODB_URI=mongodb://AcessDatabase:HelloHello123@ac-bxffhfl-shard-00-00.jq57mdl.mongodb.net:27017,ac-bxffhfl-shard-00-01.jq57mdl.mongodb.net:27017,ac-bxffhfl-shard-00-02.jq57mdl.mongodb.net:27017/?ssl=true&replicaSet=atlas-13ti31-shard-0&authSource=admin&appName=Cluster0&compressors=zlib
-JWT_SECRET=assetflow-dev-secret-change-in-production
-JWT_EXPIRES_IN=7d
-CLOUDINARY_CLOUD_NAME=jbgvspdk
-CLOUDINARY_API_KEY=817626984348789
-CLOUDINARY_API_SECRET=94lTUKZnPjkpxeXyyr2qWTae0_k
-CLOUDINARY_URL=cloudinary://817626984348789:94lTUKZnPjkpxeXyyr2qWTae0_k@jbgvspdk
-GROQ_API_KEY=your_actual_api_key_here
-```
 
 **`server/index.js` (Entry point & routes setup)**:
 ```javascript
